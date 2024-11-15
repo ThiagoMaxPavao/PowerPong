@@ -1,5 +1,10 @@
 from game_constants import *
 import utime
+import st7789
+
+import vga1_8x8 as small_font
+import vga1_16x32 as big_font
+import vga1_bold_16x32 as big_bold_font
 
 # ---------------------------------------- Funções auxiliares ----------------------------------------
 
@@ -21,26 +26,20 @@ def signal(x):
     return int(x / abs(x))
 
 # Desenha opções de quantidade de Sets, selecionando a enviada em selected
-def draw_options(selected, spacing):
+def draw_options(display, selected, spacing):
     
+    display.fill_rect(50, 80, WIDTH-50*2, spacing*len(n_sets_options), st7789.BLACK)
+
     # Desenho das opções
-    for i, option in enumerate(options):
-        if i == selected:
-            size = 5  # Tamanho maior para a opção selecionada
-        else:
-            size = 3  # Tamanho menor para as outras opções
-            
+    for i, option in enumerate(n_sets_options):
         text = str(option)
-        text_width = display.measure_text(text, size)
-        # Calcula a posição x para centralizar as opções, aplicando o offset
-        display.set_pen(st7789.WHITE)
-        x_position = (WIDTH - text_width) // 2 + (i - selected) * spacing
-        display.text(text, x_position, 100, 255, size)
-        
+        y_position = 80 + spacing * i
+
         if i == selected:
-            display.set_pen(st7789.MAGENTA)
             # Setando o marcador para a opção selecionada
-            display.text("^", (WIDTH - 15) // 2 + (i - selected) * spacing, 140, 255, 5)
+            print_x_centered_text(display, small_font, "> <", y_position, st7789.MAGENTA)
+
+        print_x_centered_text(display, small_font, text, y_position, st7789.WHITE)
     
 # Função para tocar uma nota de frequencia, duração e pausa dadas
 def play_tone(frequency, duration, pause):

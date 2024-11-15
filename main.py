@@ -32,7 +32,7 @@ score = Score(peripherals.np)
 score.draw()
 
 # Cria gerenciador do jogo
-game = Game(player1, player2)
+game = Game(player1, player2, score, ball)
 
 # Loop principal - lógica de estados
 while True:

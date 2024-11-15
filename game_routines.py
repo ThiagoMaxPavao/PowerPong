@@ -47,102 +47,99 @@ def menu_routine(game, peripherals):
 
 # -------------------- CHOOSE SETS --------------------
 
-def choose_sets_routine(game):
+def choose_sets_routine(game, peripherals):
     
     changed = False
-    changed_time_us = 0
+    changed_time_ms = 0
     selected = 0
     
-    while True:
-        player1.update_position()
-        player2.update_position()
-        
-        display.set_pen(st7789.BLACK)
-        display.clear()
-        
-        display.set_pen(st7789.WHITE)
-        
-        # Desenha título
-        text = "Number of Sets"
-        text_width = display.measure_text(text, 3)
-        display.text(text, (WIDTH - text_width) // 2, 50, 255, 3)
-        
-        # Desenha opções
-        draw_options(selected, 40)
-        
-        display.set_pen(st7789.YELLOW)
-        
-        # Desenha instrução
-        # Círculo em volta do "A"
-        a_x = 109
-        a_y = 182  # Alinhamento vertical do texto
-        display.circle(a_x - 10, a_y + 5, 8)  # Círculo em volta do "A"
-        
-        text = "Press   to select"
-        text_width = display.measure_text(text, 2)
-        display.text(text, (WIDTH - text_width) // 2, 180, 255, 2)
+    peripherals.display.fill(st7789.BLACK)
 
-        display.set_pen(st7789.BLACK)
-        display.text("A", 94, 180, 255, 2)
-        
-        display_draw_fbuf()
+    print_x_centered_text(peripherals.display, big_font, "Number",  5, st7789.WHITE)
+    print_x_centered_text(peripherals.display, big_font, "of Sets", 31, st7789.WHITE)
+
+    instruction_text = False
+    instruction_text_period_ms = 2500
+    instruction_text_last_update = utime.ticks_ms() - instruction_text_period_ms  # Marca o tempo inicial
+
+    text1_line1 = "Press A"
+    text1_line2 = "to confirm"
+
+    text2_line1 = "Up/down joystick"
+    text2_line2 = "to select"
+
+    # Desenha opções
+    draw_options(peripherals.display, selected, 10)
+
+    while True:
+        game.player1.update_position()
+        game.player2.update_position()
+
+        # Mostra instrucao
+        now = utime.ticks_ms()
+        if utime.ticks_diff(now, instruction_text_last_update) >= instruction_text_period_ms:
+            instruction_text_last_update = now
+            instruction_text = not instruction_text
+
+            peripherals.display.fill_rect(0, 130, WIDTH, 20, st7789.BLACK)
+            if instruction_text:
+                print_x_centered_text(peripherals.display, small_font, text1_line1, 130, st7789.YELLOW)
+                print_x_centered_text(peripherals.display, small_font, text1_line2, 140, st7789.YELLOW)
+            else:
+                print_x_centered_text(peripherals.display, small_font, text2_line1, 130, st7789.YELLOW)
+                print_x_centered_text(peripherals.display, small_font, text2_line2, 140, st7789.YELLOW)
             
         # Atualiza a seleção de acordo com a posição do joystick
-        adc_value_x = joystick_x.read_u16()
-        x = (adc_value_x) / 2**15 - 1
+        adc_value_y = peripherals.joystick_y.read_u16()
+        y = (adc_value_y) / 2**15 - 1
         
-        trigger = abs(x) > 0.8
+        trigger = abs(y) > 0.7
         if not changed and trigger:
-            selected += int(signal(x))
+            selected -= int(signal(y))
             
             if selected < 0:
                 selected = 0
                 
                 # error sound
-                buzzer.freq(330)
-                buzzer.duty_u16(2000)
-            elif selected > len(options) - 1:
-                selected = len(options) - 1
+                peripherals.buzzer.freq(330)
+                peripherals.buzzer.duty_u16(2000)
+            elif selected > len(n_sets_options) - 1:
+                selected = len(n_sets_options) - 1
                 
                 # error sound
-                buzzer.freq(330)
-                buzzer.duty_u16(2000)
+                peripherals.buzzer.freq(330)
+                peripherals.buzzer.duty_u16(2000)
             else:
                 # ok sound
-                buzzer.freq(440)
-                buzzer.duty_u16(2000)
+                peripherals.buzzer.freq(440)
+                peripherals.buzzer.duty_u16(2000)
+
+            draw_options(peripherals.display, selected, 10)
                 
-            changed_time_us = utime.ticks_us()
+            changed_time_ms = utime.ticks_ms()
             changed = True
-        elif not trigger or utime.ticks_us() - changed_time_us > 500000:
+        elif not trigger or utime.ticks_diff(now, changed_time_ms) > 500:
             changed = False
         
-        if utime.ticks_us() - changed_time_us > 50000:
-            buzzer.duty_u16(0)
+        if utime.ticks_diff(now, changed_time_ms) > 50:
+            peripherals.buzzer.duty_u16(0)
         
         # Verifica confirmação da escolha
         if peripherals.button_a.value() == 0:
-            buzzer.freq(440)
-            buzzer.duty_u16(2000)
-            utime.sleep_ms(100)
-            buzzer.duty_u16(0)
-            utime.sleep_ms(50)
-            buzzer.duty_u16(2000)
-            utime.sleep_ms(100)
-            buzzer.duty_u16(0)
+            beep_beep(peripherals.buzzer)
             break
         
         utime.sleep_ms(50)
     
-    game.n_sets = options[selected]
-    score.reset(game.n_sets)
-    ball.randomize_direction()
+    game.n_sets = n_sets_options[selected]
+    game.score.reset(game.n_sets)
+    game.ball.randomize_direction()
     
     game.state = GAME_BREAK
 
 # -------------------- GAME RUNNING --------------------
 
-def game_running_routine(game):
+def game_running_routine(game, peripherals):
     display.set_pen(st7789.BLACK)
     display.clear()
     
@@ -177,7 +174,7 @@ def game_running_routine(game):
 
 # -------------------- GAME BREAK --------------------
 
-def game_break_routine(game):
+def game_break_routine(game, peripherals):
     draw_oled_set_info(len(score.set_wins) + 1, game.n_sets)
     
     time_start_us = 0
@@ -215,7 +212,7 @@ def game_break_routine(game):
     
 # -------------------- END --------------------
 
-def end_routine(game):
+def end_routine(game, peripherals):
     if game.winner == 1:
         pad = player1.pad
     elif game.winner == 2:

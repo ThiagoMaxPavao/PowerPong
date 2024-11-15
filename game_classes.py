@@ -1,5 +1,7 @@
 from game_constants import *
+from util import *
 import math
+import random
 
 # ---------------------------------------- Classes ----------------------------------------
 
@@ -7,12 +9,14 @@ import math
 
 # Variáveis de um jogo
 class Game:
-    def __init__(self, player1, player2):
+    def __init__(self, player1, player2, score, ball):
         self.state = MENU
         self.n_sets = 0
         self.winner = 0
         self.player1 = player1
         self.player2 = player2
+        self.score = score
+        self.ball = ball
 
 # -------------------- Escudo --------------------
 
