@@ -123,18 +123,18 @@ def clear_oled_screen(oled):
     oled.show()   # Atualiza o display
 
 # Desenha um texto centralizado na tela OLED
-def center_text(text, y):
+def center_text(oled, text, y):
     """Calcula a posição x para centralizar o texto."""
     text_width = len(text) * 8   # Aproximando a largura do texto
     x = (128 - text_width) // 2  # Centraliza no display
     oled.text(text, x, y, 1)  # Desenha o texto
 
 # Desenha Set atual na tela
-def draw_oled_set_info(set_number, total_sets):
-    clear_oled_screen()  # Limpa a tela antes de desenhar
+def draw_oled_set_info(oled, set_number, total_sets):
+    clear_oled_screen(oled)  # Limpa a tela antes de desenhar
 
     # Desenha "SET" centralizado no topo
-    center_text(f"SET {set_number} / {total_sets}", 32-4)
+    center_text(oled, f"SET {set_number} / {total_sets}", 32-4)
 
     oled.show()  # Atualiza o display
 
@@ -142,7 +142,10 @@ def print_x_centered_text(display, font, text, y, color):
     text_width = len(text) * font.WIDTH
     display.text(font, text, (WIDTH - text_width) // 2, y, color)
     
-def display_draw_fbuf():
+def clear_fbuf(fbuf):
+    fbuf.fill(st7789.BLACK)
+
+def display_draw_fbuf(display, fbuf):
     display.blit_buffer(fbuf, 0, 0, WIDTH, HEIGHT)
 
 def beep_beep(buzzer):

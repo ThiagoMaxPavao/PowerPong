@@ -3,6 +3,10 @@ from util import *
 import math
 import random
 
+import vga1_8x8 as small_font
+import vga1_16x32 as big_font
+import vga1_bold_16x32 as big_bold_font
+
 # ---------------------------------------- Classes ----------------------------------------
 
 # -------------------- Jogo --------------------
@@ -22,9 +26,9 @@ class Game:
 
 # Poder de escudo
 class Shield:
-    def __init__(self, x, pen):
+    def __init__(self, x, color):
         self.x = x
-        self.pen = pen
+        self.color = color
         
         self.activate_time_us = 0
         self.activated = False
@@ -35,10 +39,9 @@ class Shield:
         if utime.ticks_us() - self.activate_time_us > 5000000:
             self.activated = False
     
-    def draw(self):
+    def draw(self, fbuf):
         if self.activated:
-            display.set_pen(self.pen)
-            display.rectangle(self.x - 2, 0, 5, HEIGHT-1)
+            fbuf.rect(self.x - 2, 0, 5, HEIGHT-1, self.color, True)
     
     def activate(self):
         if self.used: # Ativa apenas se não foi utilizado ainda
@@ -52,7 +55,7 @@ class Shield:
         self.activated = False
     
     def available(self):
-        return game.state == GAME_RUNNING and not self.used
+        return not self.used
     
     def reset(self):
         self.activate_time_us = 0
@@ -211,12 +214,12 @@ class Score:
 # -------------------- Jogador --------------------
 
 class Player:
-    def __init__(self, glove, pad, shield, invert_controls, ready_text_side):
+    def __init__(self, glove, pad, shield, invert_controls, side):
         self.glove = glove
         self.pad = pad
         self.shield = shield
         self.invert_controls = invert_controls
-        self.ready_text_side = ready_text_side
+        self.side = side
         
         self.angle_filter = LowPassAngleFilter(cutoff_frequency, sampling_time)
         
@@ -242,67 +245,60 @@ class Player:
         self.pad.update(angle)
     
     def button_pressed(self):
-        return self.glove.get_button_state(6) == 1
+        return self.glove.get_button_state(3) == 1
 
-    def draw(self):
-        self.pad.draw()
-        self.shield.draw()
+    def draw(self, fbuf):
+        self.pad.draw(fbuf)
+        self.shield.draw(fbuf)
         
         if self.shield.available():
             self.glove.set_power_led(0, ON)
         else:
             self.glove.set_power_led(0, OFF)
-        
-        if game.state == GAME_BREAK:
-            self.show_ready()
     
     def reset(self):
         self.shield.reset()
         self.pad.reset()
         self.glove.set_power_led(0, OFF)
     
-    def show_ready(self):
+    def show_ready(self, fbuf):
         if not self.button_pressed():
             return
-        
-        display.set_pen(st7789.WHITE)
-        display.set_font("small_font")
-        text = "ready"
-        text_width = display.measure_text(text, 2)
-        
-        if self.ready_text_side == LEFT:
-            text_x = 0 + 10
+
+        if self.side == UP:
+            y = HEIGHT//4
         else:
-            text_x = WIDTH - 10 - text_width
-            
-        display.text(text, text_x, 10, 255, 2)
+            y = HEIGHT - HEIGHT//4 - 8
+        
+        text_width = 5*8
+        
+        fbuf.text("READY", (WIDTH - text_width)//2, y, st7789.WHITE)
     
 # -------------------- Pad do Jogador --------------------
 
 # Inicializa o pad e a bola
 class PlayerPad:
-    def __init__(self, x, y, pen):
+    def __init__(self, x, y, color):
         self.start_x = x
         self.start_y = y
         self.x = x
         self.y = y
-        self.pen = pen
+        self.color = color
         
     def update(self, angle):
         if angle < 0:
             return
         
-        self.y = map_value(angle, 0 + math.pi/4, math.pi - math.pi/4, PAD_WIDTH//2, WIDTH - PAD_WIDTH//2)
+        self.x = map_value(angle, 0 + math.pi/4, math.pi - math.pi/4, PAD_WIDTH//2, WIDTH - PAD_WIDTH//2)
         
         # Limita a movimentação do pad
-        if self.y < PAD_WIDTH // 2:
-            self.y = PAD_WIDTH // 2
-        elif self.y + PAD_WIDTH // 2 > WIDTH:
-            self.y = WIDTH - PAD_WIDTH // 2
+        if self.x < PAD_WIDTH // 2:
+            self.x = PAD_WIDTH // 2
+        elif self.x + PAD_WIDTH // 2 > WIDTH:
+            self.x = WIDTH - PAD_WIDTH // 2
 
-    def draw(self):
-        display.set_pen(self.pen)
-        display.rectangle(int(self.x), int(self.y) - PAD_WIDTH//2, PAD_WEIGHT, PAD_WIDTH)
+    def draw(self, fbuf):
+        fbuf.rect(int(self.x) - PAD_WIDTH//2, int(self.y), PAD_WIDTH, PAD_WEIGHT, self.color, True)
     
     def reset(self):
         self.x = self.start_x
@@ -311,13 +307,13 @@ class PlayerPad:
 # -------------------- Bola --------------------
 
 class Ball:
-    def __init__(self, x, y, pen):
+    def __init__(self, x, y, color):
         self.vmax = BALL_VMAX
         self.x = x
         self.y = y
         self.vx = -self.vmax
         self.vy = 0
-        self.pen = pen
+        self.color = color
         
         self.sound_freq = 0
         self.sound_on = False
@@ -430,9 +426,8 @@ class Ball:
             buzzer.duty_u16(0)
             self.sound_on = False
 
-    def draw(self):
-        display.set_pen(self.pen)
-        display.circle(int(self.x), int(self.y), BALL_RADIUS)
+    def draw(self, fbuf):
+        fbuf.ellipse(int(self.x), int(self.y), BALL_RADIUS, BALL_RADIUS, self.color, True)
     
     def out(self):
         return self.out_side() != 0

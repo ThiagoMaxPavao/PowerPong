@@ -175,33 +175,36 @@ def game_running_routine(game, peripherals):
 # -------------------- GAME BREAK --------------------
 
 def game_break_routine(game, peripherals):
-    draw_oled_set_info(len(score.set_wins) + 1, game.n_sets)
+    draw_oled_set_info(peripherals.oled, len(game.score.set_wins) + 1, game.n_sets)
     
     time_start_us = 0
     starting = False
     
     while True:
-        display.set_pen(st7789.BLACK)
-        display.clear()
-        
-        player1.update_position()
-        player2.update_position()
+        clear_fbuf(peripherals.fbuf)
 
-        player1.draw()
-        player2.draw()
-        ball.draw()
+        game.player1.update_position()
+        game.player2.update_position()
+
+        game.player1.draw(peripherals.fbuf)
+        game.player2.draw(peripherals.fbuf)
+
+        game.player1.show_ready(peripherals.fbuf)
+        game.player2.show_ready(peripherals.fbuf)
+
+        game.ball.draw(peripherals.fbuf)
         
         # Atualiza o display
-        display_draw_fbuf()
+        display_draw_fbuf(peripherals.display, peripherals.fbuf)
         
-        if not starting and player1.button_pressed() and player2.button_pressed():
+        if not starting and game.player1.button_pressed() and game.player2.button_pressed():
             starting = True
             time_start_us = utime.ticks_us()
-            buzzer.freq(440)
-            buzzer.duty_u16(2000)
+            peripherals.buzzer.freq(440)
+            peripherals.buzzer.duty_u16(2000)
         
         if starting and utime.ticks_us() - time_start_us > 500000:
-            buzzer.duty_u16(0)
+            peripherals.buzzer.duty_u16(0)
             
         if starting and utime.ticks_us() - time_start_us > 1000000:
             break

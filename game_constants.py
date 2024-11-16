@@ -7,9 +7,9 @@ END = 4
 
 # Constantes de Jogo
 BALL_VMAX = 5
-BALL_RADIUS = 5
-PAD_WIDTH = 75
-PAD_WEIGHT = 10
+BALL_RADIUS = 3
+PAD_WIDTH = 50
+PAD_WEIGHT = 6
 
 # Liga/Desliga
 OFF = 0
@@ -18,6 +18,8 @@ ON = 1
 # Lados
 RIGHT = 0
 LEFT = 1
+UP = 2
+DOWN = 3
 
 # Opcoes de numero de SETs
 n_sets_options = [1, 3, 5]

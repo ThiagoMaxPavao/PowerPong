@@ -30,7 +30,8 @@ class Peripherals:
 
         # ----- Controle do Jogador 2 -----
 
-        self.glove2 = self.glove1 # Glove(I2C0)
+        #self.glove2 = self.glove1
+        self.glove2 = Glove(I2C0)
 
         # Buzzer
         self.buzzer = PWM(Pin(10))
