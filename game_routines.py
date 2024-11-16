@@ -1,6 +1,8 @@
 import utime
-from util import *
 import st7789
+
+from util import *
+from game_constants import *
 
 import vga1_8x8 as small_font
 import vga1_16x32 as big_font
@@ -140,37 +142,35 @@ def choose_sets_routine(game, peripherals):
 # -------------------- GAME RUNNING --------------------
 
 def game_running_routine(game, peripherals):
-    display.set_pen(st7789.BLACK)
-    display.clear()
-    
-    # Atualiza o pad e a bola
-    player1.update()
-    player2.update()
-    ball.update(player1, player2)
+    while not game.ball.out():
 
-    # Desenha o pad e a bola
-    player1.draw()
-    player2.draw()
-    ball.draw()
-    
-    # Atualiza o display
-    display_draw_fbuf()
-    
-    utime.sleep(sampling_time)
-    
-    if ball.out():
-        game_over = score.point(ball.out_side())
-        player1.reset()
-        player2.reset()
-        ball.reset(game_over)
+        clear_fbuf(peripherals.fbuf)
         
-        if game_over:
-            game.winner = score.get_game_winner()
-            game.state = END
-        else:
-            game.state = GAME_BREAK
+        # Atualiza o pad e a bola
+        game.player1.update()
+        game.player2.update()
+        game.ball.update(game.player1, game.player2, peripherals.buzzer)
+
+        # Desenha o pad e a bola
+        game.player1.draw(peripherals.fbuf)
+        game.player2.draw(peripherals.fbuf)
+        game.ball.draw(peripherals.fbuf)
+        
+        # Atualiza o display
+        display_draw_fbuf(peripherals.display, peripherals.fbuf)
+        
+        utime.sleep(sampling_time)
+    
+    game_over = game.score.point(peripherals.buzzer, game.ball.out_side())
+    game.player1.reset()
+    game.player2.reset()
+    game.ball.reset(game_over)
+    
+    if game_over:
+        game.winner = game.score.get_game_winner()
+        game.state = END
     else:
-        game.state = GAME_RUNNING
+        game.state = GAME_BREAK
 
 # -------------------- GAME BREAK --------------------
 
@@ -217,41 +217,37 @@ def game_break_routine(game, peripherals):
 
 def end_routine(game, peripherals):
     if game.winner == 1:
-        pad = player1.pad
+        pad = game.player1.pad
     elif game.winner == 2:
-        pad = player2.pad
+        pad = game.player2.pad
     
-    animate_pad_to_center(pad, WIDTH // 2 - PAD_WEIGHT // 2, 170, 0.5)
-    
-    display.set_font("large_font")
-    
+    clear_fbuf(peripherals.fbuf)
+
+    pad.x = WIDTH//2
+    pad.y = HEIGHT//2
+    pad.draw(peripherals.fbuf)
+
+    display_draw_fbuf(peripherals.display, peripherals.fbuf)
+
     if game.winner == 1:
-        display.set_pen(st7789.RED)
-        text_width = display.measure_text("RED", 7)
-        display.text("RED", (WIDTH - text_width) // 2, 10, 255, 7)
+        print_x_centered_text(peripherals.display, big_bold_font, "RED", HEIGHT//4, st7789.RED)
     elif game.winner == 2:
-        display.set_pen(st7789.BLUE)
-        text_width = display.measure_text("BLUE", 7)
-        display.text("BLUE", (WIDTH - text_width) // 2, 10, 255, 7)
+        print_x_centered_text(peripherals.display, big_bold_font, "BLUE", HEIGHT//4, st7789.BLUE)
         
-    display.set_pen(st7789.WHITE)
-    text_width = display.measure_text("WINS!", 7)
-    display.text("WINS!", (WIDTH - text_width) // 2, 60, 255, 7)
-    display_draw_fbuf()
+    print_x_centered_text(peripherals.display, big_font, "WINS!", 3*HEIGHT//4 - big_font.HEIGHT +10, st7789.WHITE)
+
     
     # Música de vitoria do jogo
-    end_song()
+    end_song(peripherals.buzzer)
     
-    player1.reset()
-    player2.reset()
+    game.player1.reset()
+    game.player2.reset()
     
-    score.reset()
-    score.draw()
+    game.score.reset()
+    game.score.draw()
     
     # Limpa a tela
-    display.set_pen(st7789.BLACK)
-    display.clear()
-    display_draw_fbuf()
+    peripherals.display.fill(st7789.BLACK)
         
     utime.sleep_ms(1000)
     

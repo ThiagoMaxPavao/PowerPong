@@ -15,13 +15,13 @@ from peripherals import Peripherals
 peripherals = Peripherals()
 
 # Inicializa os pads e a bola
-pad1 = PlayerPad(WIDTH // 2, 0 + 10 - PAD_WEIGHT, st7789.RED)
-pad2 = PlayerPad(WIDTH // 2, HEIGHT - 10, st7789.BLUE)
-ball = Ball(WIDTH // 2, HEIGHT // 2, st7789.WHITE)
+pad1 = PlayerPad(WIDTH // 2, 0 + 10 - PAD_WEIGHT, swap_rgb565(st7789.RED))
+pad2 = PlayerPad(WIDTH // 2, HEIGHT - 10, swap_rgb565(st7789.BLUE))
+ball = Ball(WIDTH // 2, HEIGHT // 2, swap_rgb565(st7789.WHITE))
 
 # Cria os escudos
-shield1 = Shield(0, st7789.YELLOW)
-shield2 = Shield(WIDTH-1, st7789.YELLOW)
+shield1 = Shield(0, swap_rgb565(st7789.YELLOW))
+shield2 = Shield(HEIGHT-SHIELD_WEIGHT, swap_rgb565(st7789.YELLOW))
 
 # Cria os jogadores
 player1 = Player(peripherals.glove1, pad1, shield1, False, UP)

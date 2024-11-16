@@ -26,8 +26,8 @@ class Game:
 
 # Poder de escudo
 class Shield:
-    def __init__(self, x, color):
-        self.x = x
+    def __init__(self, y, color):
+        self.y = y
         self.color = color
         
         self.activate_time_us = 0
@@ -41,7 +41,7 @@ class Shield:
     
     def draw(self, fbuf):
         if self.activated:
-            fbuf.rect(self.x - 2, 0, 5, HEIGHT-1, self.color, True)
+            fbuf.rect(0, self.y, WIDTH, SHIELD_WEIGHT, self.color, True)
     
     def activate(self):
         if self.used: # Ativa apenas se não foi utilizado ainda
@@ -75,7 +75,7 @@ class Score:
         self.np = np
     
     # Retorna True se o jogo tiver terminado, False caso contrário
-    def point(self, player):
+    def point(self, buzzer, player):
         if self.points1 == 4 and self.points2 == 4: # logica "vai a dois"
             if player == 1:
                 self.match_point += -1
@@ -103,7 +103,7 @@ class Score:
             set_winner = 2
         
         if set_winner != -1: # Verifica se o set terminou
-            self.announce_set_victory(set_winner)
+            self.announce_set_victory(buzzer, set_winner)
             
             self.set_wins.append(set_winner)
             self.points1 = 0
@@ -164,10 +164,10 @@ class Score:
         self.np.write()
     
     # Animação de fim de Set
-    def announce_set_victory(self, player):
-        play_tone(523, 200, 50)
-        play_tone(659, 200, 50)
-        play_tone(784, 300, 200)
+    def announce_set_victory(self, buzzer, player):
+        play_tone(buzzer, 523, 200, 50)
+        play_tone(buzzer, 659, 200, 50)
+        play_tone(buzzer, 784, 300, 200)
         
         while self.points1 > 0 or self.points2 > 0:
             
@@ -311,8 +311,8 @@ class Ball:
         self.vmax = BALL_VMAX
         self.x = x
         self.y = y
-        self.vx = -self.vmax
-        self.vy = 0
+        self.vx = 0
+        self.vy = self.vmax
         self.color = color
         
         self.sound_freq = 0
@@ -323,55 +323,55 @@ class Ball:
         pad1 = player1.pad
         pad2 = player2.pad
         
-        if player1.shield.activated and self.x < BALL_RADIUS:
+        if player1.shield.activated and self.y < BALL_RADIUS:
             player1.shield.deactivate()
-            self.x = BALL_RADIUS
-            self.vx = -self.vx
+            self.y = BALL_RADIUS + SHIELD_WEIGHT
+            self.vy = -self.vy
             return True
         
-        if player2.shield.activated and self.x > WIDTH - BALL_RADIUS:
+        if player2.shield.activated and self.y > HEIGHT - BALL_RADIUS:
             player2.shield.deactivate()
-            self.x = WIDTH - BALL_RADIUS
-            self.vx = -self.vx
+            self.y = HEIGHT - (BALL_RADIUS + SHIELD_WEIGHT)
+            self.vy = -self.vy
             return True
         
         # Colisão com o pad do player 1
-        if self.vx < 0 and abs(self.x - PAD_WEIGHT - pad1.x) < BALL_RADIUS and abs(self.y - pad1.y) <= BALL_RADIUS + PAD_WIDTH // 2 :
-            self.vx = -self.vx
+        if self.vy < 0 and abs(self.y - PAD_WEIGHT - pad1.y) < BALL_RADIUS and abs(self.x - pad1.x) <= BALL_RADIUS + PAD_WIDTH // 2 :
+            self.vy = -self.vy
             
             hs = PAD_WIDTH // 2
-            dir = self.y - pad1.y
-            dir /= hs
-            dir *= 1.1
-            
-            self.vy = dir * self.vmax
-            
-            self.x = pad1.x + PAD_WEIGHT + BALL_RADIUS
-            return True
-            
-        # Colisão com o pad do player 2
-        if self.vx > 0 and abs(self.x - pad2.x) < BALL_RADIUS and abs(self.y - pad2.y) <= BALL_RADIUS + PAD_WIDTH // 2 :
-            self.vx = -self.vx
-            
-            hs = PAD_WIDTH // 2
-            dir = self.y - pad2.y
+            dir = self.x - pad1.x
             dir /= hs
             dir *= 1.25
             
-            self.vy = dir * self.vmax
+            self.vx = dir * self.vmax
             
-            self.x = pad2.x - BALL_RADIUS
+            self.y = pad1.y + PAD_WEIGHT + BALL_RADIUS
+            return True
+            
+        # Colisão com o pad do player 2
+        if self.vy > 0 and abs(self.y - pad2.y) < BALL_RADIUS and abs(self.x - pad2.x) <= BALL_RADIUS + PAD_WIDTH // 2 :
+            self.vy = -self.vy
+            
+            hs = PAD_WIDTH // 2
+            dir = self.x - pad2.x
+            dir /= hs
+            dir *= 1.25
+            
+            self.vx = dir * self.vmax
+            
+            self.y = pad2.y - BALL_RADIUS
             return True
             
         # Colisões com as bordas
-        if self.y - BALL_RADIUS <= 0:
-            self.vy = -self.vy
-            self.y = BALL_RADIUS
+        if self.x - BALL_RADIUS <= 0:
+            self.vx = -self.vx
+            self.x = BALL_RADIUS
             return True
         
-        if self.y + BALL_RADIUS >= WIDTH:
-            self.vy = -self.vy
-            self.y = WIDTH - BALL_RADIUS
+        if self.x + BALL_RADIUS >= WIDTH:
+            self.vx = -self.vx
+            self.x = WIDTH - BALL_RADIUS
             return True
         
         return False
@@ -402,14 +402,14 @@ class Ball:
             if self.collision_check(player1, player2):
                 break
     
-    def update(self, player1, player2):
-        prev_vx = self.vx
+    def update(self, player1, player2, buzzer):
+        prev_vy = self.vy
         
         self.update_position(player1, player2)
         
-        if prev_vx != self.vx:
-            self.vmax += 0.3
-            self.vx = signal(self.vx) * self.vmax
+        if prev_vy != self.vy:
+            self.vmax += SPEED_INCREMENT
+            self.vy = signal(self.vy) * self.vmax
             
             if self.sound_freq == 0:
                 buzzer.freq(880)
@@ -433,9 +433,9 @@ class Ball:
         return self.out_side() != 0
         
     def out_side(self):
-        if self.x < 0 - BALL_RADIUS:
+        if self.y < 0 - BALL_RADIUS:
             return 2
-        elif self.x > WIDTH + BALL_RADIUS:
+        elif self.y > HEIGHT + BALL_RADIUS:
             return 1
         return 0
     
@@ -443,17 +443,17 @@ class Ball:
     def reset(self, hard):
         self.x = WIDTH//2
         self.y = HEIGHT//2
-        self.vy = 0
+        self.vx = 0
        
         if hard:
             self.vmax = BALL_VMAX
         else:
             self.vmax = max(BALL_VMAX, self.vmax * 0.7)
             
-        self.vx = signal(self.vx) * self.vmax
+        self.vy = signal(self.vy) * self.vmax
         
     def randomize_direction(self):
-        self.vx *= random.choice([-1, 1])
+        self.vy *= random.choice([-1, 1])
 
 # -------------------- Filtro passa baixa para ângulo --------------------
 

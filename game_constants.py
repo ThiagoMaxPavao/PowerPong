@@ -6,10 +6,12 @@ CHOOSE_SETS = 3
 END = 4
 
 # Constantes de Jogo
-BALL_VMAX = 5
+BALL_VMAX = 2
 BALL_RADIUS = 3
 PAD_WIDTH = 50
 PAD_WEIGHT = 6
+SHIELD_WEIGHT = 2
+SPEED_INCREMENT = 0.1
 
 # Liga/Desliga
 OFF = 0
