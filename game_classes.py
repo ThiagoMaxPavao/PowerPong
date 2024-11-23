@@ -239,7 +239,7 @@ class Player:
         new_angle = self.glove.get_angle()
         
         if self.invert_controls:
-            new_angle = math.pi - new_angle
+            new_angle = - new_angle
             
         angle = self.angle_filter.filter(new_angle)
         self.pad.update(angle)
@@ -284,12 +284,11 @@ class PlayerPad:
         self.x = x
         self.y = y
         self.color = color
+        self.left_angle = math.pi/4
+        self.right_angle = - math.pi/4
         
     def update(self, angle):
-        if angle < 0:
-            return
-        
-        self.x = map_value(angle, 0 + math.pi/4, math.pi - math.pi/4, PAD_WIDTH//2, WIDTH - PAD_WIDTH//2)
+        self.x = map_value(angle, self.left_angle, self.right_angle, PAD_WIDTH//2, WIDTH - PAD_WIDTH//2)
         
         # Limita a movimentação do pad
         if self.x < PAD_WIDTH // 2:

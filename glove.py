@@ -56,7 +56,7 @@ class Glove:
     def get_angle(self):
         """Calcula o ângulo de inclinação baseado no acelerômetro."""
         accel_data = self.read_acceleration()
-        angle = math.atan2(accel_data[2], accel_data[1])  # Calcula o ângulo com base nos dados
+        angle = math.atan2(-accel_data[2], -accel_data[0])  # Calcula o ângulo com base nos dados
         return angle
 
     def get_button_state(self, index):
