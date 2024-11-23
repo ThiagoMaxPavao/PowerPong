@@ -35,8 +35,13 @@ class Shield:
         if self.activated:
             fbuf.rect(0, self.y, WIDTH, SHIELD_WEIGHT, self.color, True)
     
+    # Retorna se houve sucesso ao ativar ou se já estava ativo.
     def activate(self):
+        if self.activated == True:
+            return False
+        
         self.activated = True
+        return True
     
     def deactivate(self):
         self.activated = False
@@ -212,10 +217,10 @@ class Player:
 
         self.button_states = {0: 0, 1: 0, 2: 0, 3: 0}  # Estado inicial dos botões (todos soltos)
         self.powers = {
-            0: {"cost": 1, "action": lambda: self.enemy_player.increment_invisiblity_counter(INVISIBILITY_POWER_INCREMENT)},
-            1: {"cost": 2, "action": self.shield.activate},
-            2: {"cost": 3, "action": lambda: print("Poder com custo 3 ativado!")},
-            3: {"cost": 4, "action": lambda: print("Poder com custo 4 ativado!")}
+            0: {"cost": 1, "action": self.activate_power_1},
+            1: {"cost": 2, "action": self.activate_power_2},
+            2: {"cost": 3, "action": self.activate_power_3},
+            3: {"cost": 4, "action": self.activate_power_4}
         }
         
     def update(self):
@@ -227,8 +232,9 @@ class Player:
             current_state = self.glove.get_button_state(button)
             if current_state == 1 and self.button_states[button] == 0:  # Botão passou de solto para pressionado
                 if self.power >= power_info["cost"]:
-                    self.spend_power(power_info["cost"])
-                    power_info["action"]()
+                    used = power_info["action"]()
+                    if used:
+                        self.spend_power(power_info["cost"])
             self.button_states[button] = current_state  # Atualiza o estado do botão
         
     def update_position(self):
@@ -315,7 +321,7 @@ class Player:
     def set_enemy_player(self, player):
         self.enemy_player = player
 
-    def increment_invisiblity_counter(self, amount):
+    def increment_invisibility_counter(self, amount):
         self.invisibility_counter += amount
 
     def decrement_invisibility_counter(self):
@@ -331,6 +337,23 @@ class Player:
         for button, power_info in self.powers.items():
             current_state = self.glove.get_button_state(button)
             self.button_states[button] = current_state
+        
+    # Função de ativação dos poderes, devem retornar se o poder foi utilizado com sucesso ou não (True/False)
+    def activate_power_1(self): # Invisibilidade
+        self.enemy_player.increment_invisibility_counter(INVISIBILITY_POWER_INCREMENT)
+        return True
+
+    def activate_power_2(self):
+        status = self.shield.activate()
+        return status
+
+    def activate_power_3(self):
+        print("Poder com custo 1 ativado!")
+        return True
+
+    def activate_power_4(self):
+        print("Poder com custo 1 ativado!")
+        return True
 
     
 # -------------------- Pad do Jogador --------------------
