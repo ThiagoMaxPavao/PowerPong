@@ -202,16 +202,17 @@ class Player:
         self.shield = shield
         self.invert_controls = invert_controls
         self.side = side
+        self.power = 0
         
         self.angle_filter = LowPassAngleFilter(cutoff_frequency, sampling_time)
         
         self.current_led_state = -1 # unknown
-        self.glove.set_power_led(0, OFF)
+        
+        self.glove.set_power_leds(4*[OFF])
         
     def update(self):
-        self.shield.update()
-        
-        if self.button_pressed():
+        if self.glove.get_button_state(1) == 1 and self.power >= 2 and not self.shield.activated:
+            self.spend_power(2)
             self.shield.activate()
     
         self.update_position()
@@ -225,26 +226,42 @@ class Player:
             
         angle = self.angle_filter.filter(new_angle)
         self.pad.update(angle)
-    
-    def button_pressed(self):
-        return self.glove.get_button_state(3) == 1
 
     def draw(self, fbuf):
         self.pad.draw(fbuf)
         self.shield.draw(fbuf)
-        
-        if self.shield.available():
-            self.glove.set_power_led(0, ON)
-        else:
-            self.glove.set_power_led(0, OFF)
     
     def reset(self):
         self.shield.reset()
         self.pad.reset()
-        self.glove.set_power_led(0, OFF)
+    
+    def update_power(self, new_value):
+        self.power = new_value
+        self.update_power_leds()
+        
+    def add_power(self):
+        if self.power == 4:
+            for _ in range(2):  # Repetir duas vezes
+                self.glove.set_power_leds(4*[OFF])
+                self.glove.buzz(True)  # Ativa o buzzer
+                utime.sleep_ms(100)
+                self.glove.set_power_leds(4*[ON])
+                self.glove.buzz(False)  # Desativa o buzzer
+                utime.sleep_ms(100)
+        else:
+            self.update_power(self.power + 1)
+        
+    def spend_power(self, amount):
+        self.update_power(self.power - amount)
+    
+    def reset_power(self):
+        self.update_power(0)
+    
+    def ready_button_pressed(self):
+        return self.glove.get_button_state(0) == 1
     
     def show_ready(self, fbuf):
-        if not self.button_pressed():
+        if not self.ready_button_pressed():
             return
 
         if self.side == UP:
@@ -255,6 +272,10 @@ class Player:
         text_width = 5*8
         
         fbuf.text("READY", (WIDTH - text_width)//2, y, st7789.WHITE)
+    
+    def update_power_leds(self):
+        for i in range(4):
+            self.glove.set_power_led(3-i, ON if i < self.power else OFF)
     
 # -------------------- Pad do Jogador --------------------
 

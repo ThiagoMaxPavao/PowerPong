@@ -168,8 +168,13 @@ def game_running_routine(game, peripherals):
     
     if game_over:
         game.winner = game.score.get_game_winner()
+        game.player1.reset_power()
+        game.player2.reset_power()
+        
         game.state = END
     else:
+        game.player1.add_power()
+        game.player2.add_power()
         game.state = GAME_BREAK
 
 # -------------------- GAME BREAK --------------------
@@ -197,7 +202,7 @@ def game_break_routine(game, peripherals):
         # Atualiza o display
         display_draw_fbuf(peripherals.display, peripherals.fbuf)
         
-        if not starting and game.player1.button_pressed() and game.player2.button_pressed():
+        if not starting and game.player1.ready_button_pressed() and game.player2.ready_button_pressed():
             starting = True
             time_start_us = utime.ticks_us()
             peripherals.buzzer.freq(440)

@@ -25,7 +25,7 @@ shield2 = Shield(HEIGHT-SHIELD_WEIGHT, swap_rgb565(st7789.YELLOW))
 
 # Cria os jogadores
 player1 = Player(peripherals.glove1, pad1, shield1, False, UP)
-player2 = Player(peripherals.glove2, pad2, shield2, False, DOWN)
+player2 = Player(peripherals.glove2, pad2, shield2, True, DOWN)
 
 # Cria o placar
 score = Score(peripherals.np)
