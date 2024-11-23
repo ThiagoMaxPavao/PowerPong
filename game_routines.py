@@ -142,6 +142,9 @@ def choose_sets_routine(game, peripherals):
 # -------------------- GAME RUNNING --------------------
 
 def game_running_routine(game, peripherals):
+    game.player1.round_init()
+    game.player2.round_init()
+
     while not game.ball.out():
 
         clear_fbuf(peripherals.fbuf)

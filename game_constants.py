@@ -20,8 +20,8 @@ ON = 1
 # Lados
 RIGHT = 0
 LEFT = 1
-UP = 2
-DOWN = 3
+TOP = 2
+BOTTOM = 3
 
 # Opcoes de numero de SETs
 n_sets_options = [1, 3, 5]
@@ -37,3 +37,6 @@ sampling_time = 0.001    # intervalo de amostragem em segundos
 # Display 
 WIDTH = 128
 HEIGHT = 160
+
+# Poderes
+INVISIBILITY_POWER_INCREMENT = 3 # Em quanto incrementar o contador de invisibilidade quando um jogador utiliza o poder 

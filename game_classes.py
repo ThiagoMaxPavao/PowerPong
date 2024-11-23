@@ -205,17 +205,31 @@ class Player:
         self.power = 0
         
         self.angle_filter = LowPassAngleFilter(cutoff_frequency, sampling_time)
-        
-        self.current_led_state = -1 # unknown
-        
         self.glove.set_power_leds(4*[OFF])
+
+        self.enemy_player = None
+        self.invisibility_counter = 0 # if > 0, invisble. Decrements each time player hits the ball.
+
+        self.button_states = {0: 0, 1: 0, 2: 0, 3: 0}  # Estado inicial dos botões (todos soltos)
+        self.powers = {
+            0: {"cost": 1, "action": lambda: self.enemy_player.increment_invisiblity_counter(INVISIBILITY_POWER_INCREMENT)},
+            1: {"cost": 2, "action": self.shield.activate},
+            2: {"cost": 3, "action": lambda: print("Poder com custo 3 ativado!")},
+            3: {"cost": 4, "action": lambda: print("Poder com custo 4 ativado!")}
+        }
         
     def update(self):
-        if self.glove.get_button_state(1) == 1 and self.power >= 2 and not self.shield.activated:
-            self.spend_power(2)
-            self.shield.activate()
-    
+        # Calcula posição baseado no acelerômetro
         self.update_position()
+
+        # Verifica pressionamentos dos botões para utilizar os poderes
+        for button, power_info in self.powers.items():
+            current_state = self.glove.get_button_state(button)
+            if current_state == 1 and self.button_states[button] == 0:  # Botão passou de solto para pressionado
+                if self.power >= power_info["cost"]:
+                    self.spend_power(power_info["cost"])
+                    power_info["action"]()
+            self.button_states[button] = current_state  # Atualiza o estado do botão
         
     def update_position(self):
         # Lê os dados do MPU6050
@@ -228,12 +242,33 @@ class Player:
         self.pad.update(angle)
 
     def draw(self, fbuf):
-        self.pad.draw(fbuf)
+        if self.invisibility_counter == 0:
+            self.pad.draw(fbuf)
+        else:
+            self.draw_invisibility_count(fbuf)
+        
         self.shield.draw(fbuf)
     
+    def draw_invisibility_count(self, fbuf):
+        # Determina a posição Y com base no lado
+        if self.side == TOP:
+            y = HEIGHT // 4
+        else:
+            y = HEIGHT - HEIGHT // 4 - 8
+
+        # Converte o contador para string
+        string = str(self.invisibility_counter)
+
+        # Calcula a largura do texto
+        text_width = len(string) * 8  # Assume que cada caractere tem 8 pixels de largura
+
+        # Desenha o texto centralizado
+        fbuf.text(string, (WIDTH - text_width) // 2, y, st7789.WHITE)
+
     def reset(self):
         self.shield.reset()
         self.pad.reset()
+        self.deactivate_invisibility()
     
     def update_power(self, new_value):
         self.power = new_value
@@ -264,7 +299,7 @@ class Player:
         if not self.ready_button_pressed():
             return
 
-        if self.side == UP:
+        if self.side == TOP:
             y = HEIGHT//4
         else:
             y = HEIGHT - HEIGHT//4 - 8
@@ -276,6 +311,27 @@ class Player:
     def update_power_leds(self):
         for i in range(4):
             self.glove.set_power_led(3-i, ON if i < self.power else OFF)
+
+    def set_enemy_player(self, player):
+        self.enemy_player = player
+
+    def increment_invisiblity_counter(self, amount):
+        self.invisibility_counter += amount
+
+    def decrement_invisibility_counter(self):
+        if self.invisibility_counter == 0:
+            return
+        self.invisibility_counter -= 1
+    
+    def deactivate_invisibility(self):
+        self.invisibility_counter = 0
+
+    def round_init(self):
+        # Inicializa estado dos botões, caso algum jogador comece pressionando algum botão
+        for button, power_info in self.powers.items():
+            current_state = self.glove.get_button_state(button)
+            self.button_states[button] = current_state
+
     
 # -------------------- Pad do Jogador --------------------
 
@@ -322,62 +378,69 @@ class Ball:
         self.start_sound_us = 0
         
     def collision_check(self, player1, player2):
-        pad1 = player1.pad
-        pad2 = player2.pad
-        
-        if player1.shield.activated and self.y < BALL_RADIUS:
-            player1.shield.deactivate()
-            self.y = BALL_RADIUS + SHIELD_WEIGHT
-            self.vy = -self.vy
+        # Verifica colisão com o shield
+        if self.check_shield_collision(player1):
             return True
-        
-        if player2.shield.activated and self.y > HEIGHT - BALL_RADIUS:
-            player2.shield.deactivate()
-            self.y = HEIGHT - (BALL_RADIUS + SHIELD_WEIGHT)
-            self.vy = -self.vy
+        if self.check_shield_collision(player2):
             return True
-        
-        # Colisão com o pad do player 1
-        if self.vy < 0 and abs(self.y - PAD_WEIGHT - pad1.y) < BALL_RADIUS and abs(self.x - pad1.x) <= BALL_RADIUS + PAD_WIDTH // 2 :
-            self.vy = -self.vy
-            
-            hs = PAD_WIDTH // 2
-            dir = self.x - pad1.x
-            dir /= hs
-            dir *= 1.25
-            
-            self.vx = dir * self.vmax
-            
-            self.y = pad1.y + PAD_WEIGHT + BALL_RADIUS
+
+        # Verifica colisão com os pads dos jogadores
+        if self.check_pad_collision(player1):
             return True
-            
-        # Colisão com o pad do player 2
-        if self.vy > 0 and abs(self.y - pad2.y) < BALL_RADIUS and abs(self.x - pad2.x) <= BALL_RADIUS + PAD_WIDTH // 2 :
-            self.vy = -self.vy
-            
-            hs = PAD_WIDTH // 2
-            dir = self.x - pad2.x
-            dir /= hs
-            dir *= 1.25
-            
-            self.vx = dir * self.vmax
-            
-            self.y = pad2.y - BALL_RADIUS
+        if self.check_pad_collision(player2):
             return True
-            
-        # Colisões com as bordas
+
+        # Verifica colisões com as bordas horizontais
         if self.x - BALL_RADIUS <= 0:
             self.vx = -self.vx
             self.x = BALL_RADIUS
             return True
-        
+
         if self.x + BALL_RADIUS >= WIDTH:
             self.vx = -self.vx
             self.x = WIDTH - BALL_RADIUS
             return True
-        
+
+        # colisão vertical antes do jogador vermelho, PARA TESTES, REMOVER QUANDO NÃO PRECISAR MAIS
+        if self.y - BALL_RADIUS < 20:
+            self.vy = -self.vy
+            self.y = 20 + BALL_RADIUS
+            return True
+
         return False
-    
+
+    def check_shield_collision(self, player):
+        if player.shield.activated and (
+            (player.side == TOP and self.y < BALL_RADIUS) or 
+            (player.side == BOTTOM and self.y > HEIGHT - BALL_RADIUS)
+        ):
+            player.shield.deactivate()
+            self.vy = -self.vy
+            self.y = BALL_RADIUS + SHIELD_WEIGHT if player.side == TOP else HEIGHT - (BALL_RADIUS + SHIELD_WEIGHT)
+            return True
+        return False
+
+    def check_pad_collision(self, player):
+        pad = player.pad
+        if (
+            (self.vy < 0 and player.side == TOP and abs(self.y - PAD_WEIGHT - pad.y) < BALL_RADIUS) or
+            (self.vy > 0 and player.side == BOTTOM and abs(self.y - pad.y) < BALL_RADIUS)
+        ) and abs(self.x - pad.x) <= BALL_RADIUS + PAD_WIDTH // 2:
+            self.vy = -self.vy
+
+            # Ajusta a direção horizontal com base na posição da colisão no pad
+            hs = PAD_WIDTH // 2
+            dir = (self.x - pad.x) / hs * 1.25
+            self.vx = dir * self.vmax
+
+            # Reposiciona a bola para fora do pad
+            self.y = pad.y + PAD_WEIGHT + BALL_RADIUS if player.side == "top" else pad.y - BALL_RADIUS
+
+            # Decrementa contador de invisibilidade, para deixar o jogador mais próximo de restaurar sua visão
+            player.decrement_invisibility_counter()
+            return True
+        return False
+
     def update_position(self, player1, player2):
         MOVE_LIMIT = 1
         
