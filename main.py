@@ -24,8 +24,8 @@ shield1 = Shield(0, swap_rgb565(st7789.YELLOW))
 shield2 = Shield(HEIGHT-SHIELD_WEIGHT, swap_rgb565(st7789.YELLOW))
 
 # Cria os jogadores
-player1 = Player(peripherals.glove1, pad1, shield1, False, TOP)
-player2 = Player(peripherals.glove2, pad2, shield2, True, BOTTOM)
+player1 = Player(peripherals.glove1, pad1, shield1, False, TOP, swap_rgb565(st7789.RED), [1,0,0])
+player2 = Player(peripherals.glove2, pad2, shield2, True, BOTTOM, swap_rgb565(st7789.BLUE), [0,0,1])
 
 player1.set_enemy_player(player2)
 player2.set_enemy_player(player1)

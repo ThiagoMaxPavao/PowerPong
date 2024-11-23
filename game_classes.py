@@ -201,12 +201,13 @@ class Score:
 # -------------------- Jogador --------------------
 
 class Player:
-    def __init__(self, glove, pad, shield, invert_controls, side):
+    def __init__(self, glove, pad, shield, invert_controls, side, time_shield_color, glove_led_color):
         self.glove = glove
         self.pad = pad
         self.shield = shield
         self.invert_controls = invert_controls
         self.side = side
+        self.time_shield_color = time_shield_color
         self.power = 0
         
         self.angle_filter = LowPassAngleFilter(cutoff_frequency, sampling_time)
@@ -218,6 +219,8 @@ class Player:
         self.buffed_pad = False # Se estiver bufado, bola sempre reflete com velocidade maxima e com direção aletatória
         self.buffed_pad_activated_time_ms = 0
 
+        self.time_shield = False
+
         self.button_states = {0: 0, 1: 0, 2: 0, 3: 0}  # Estado inicial dos botões (todos soltos)
         self.powers = {
             0: {"cost": 1, "action": self.activate_power_1},
@@ -225,6 +228,8 @@ class Player:
             2: {"cost": 3, "action": self.activate_power_3},
             3: {"cost": 4, "action": self.activate_power_4}
         }
+
+        self.glove.set_rgb_color(glove_led_color)
         
     def update(self):
         # Calcula posição baseado no acelerômetro
@@ -255,12 +260,21 @@ class Player:
         self.pad.update(angle)
 
     def draw(self, fbuf):
+        if self.time_shield:
+            self.draw_time_shield(fbuf)
+            
         if self.invisibility_counter == 0:
             self.pad.draw(fbuf, self.buffed_pad)
         else:
             self.draw_invisibility_count(fbuf)
         
         self.shield.draw(fbuf)
+
+    def draw_time_shield(self, fbuf):
+        y = int(10)
+        for i in range(5):
+            y += 6
+            fbuf.hline(0, y if self.side == TOP else HEIGHT - y, WIDTH, self.time_shield_color)
     
     def draw_invisibility_count(self, fbuf):
         # Determina a posição Y com base no lado
@@ -269,19 +283,28 @@ class Player:
         else:
             y = HEIGHT - HEIGHT // 4 - 8
 
-        # Converte o contador para string
-        string = str(self.invisibility_counter)
+        # Número total de barras a serem desenhadas
+        total_bars = self.invisibility_counter
 
-        # Calcula a largura do texto
-        text_width = len(string) * 8  # Assume que cada caractere tem 8 pixels de largura
+        # Largura de uma barra (8 pixels) e o total de largura para todas as barras
+        bar_spacing = 5
+        total_width = total_bars * bar_spacing
 
-        # Desenha o texto centralizado
-        fbuf.text(string, (WIDTH - text_width) // 2, y, st7789.WHITE)
+        # Calcula a posição X centralizada para o conjunto de barras
+        center_x = (WIDTH - total_width) // 2
+
+        # Desenha as barras verticais
+        for i in range(total_bars):
+            # Calcula a posição X de cada barra individualmente
+            x = center_x + i * bar_spacing
+            fbuf.vline(x, y, 8, self.time_shield_color)
+            fbuf.vline(x+1, y, 8, self.time_shield_color)
 
     def reset(self):
         self.shield.reset()
         self.pad.reset()
         self.deactivate_invisibility()
+        self.deactivate_time_shield()
         self.deactivate_buffed_pad()
     
     def update_power(self, new_value):
@@ -356,7 +379,11 @@ class Player:
         return status
 
     def activate_power_3(self):
-        print("Poder com custo 1 ativado!")
+        if self.time_shield == True:
+            return False
+        
+        self.time_shield = True
+
         return True
 
     def activate_power_4(self):
@@ -368,9 +395,11 @@ class Player:
 
         return True
 
+    def deactivate_time_shield(self):
+        self.time_shield = False
+
     def deactivate_buffed_pad(self):
         self.buffed_pad = False
-
     
 # -------------------- Pad do Jogador --------------------
 
@@ -442,11 +471,11 @@ class Ball:
             self.x = WIDTH - BALL_RADIUS
             return True
 
-        # colisão vertical antes do jogador vermelho, PARA TESTES, REMOVER QUANDO NÃO PRECISAR MAIS
-        if self.y - BALL_RADIUS < 20:
-            self.vy = -self.vy
-            self.y = 20 + BALL_RADIUS
-            return True
+        # colisão vertical antes do jogador vermelho para teste
+        # if self.y - BALL_RADIUS < 20:
+        #     self.vy = -self.vy
+        #     self.y = 20 + BALL_RADIUS
+        #     return True
 
         return False
 
@@ -481,7 +510,10 @@ class Ball:
             self.vx = dir * self.vmax
 
             # Reposiciona a bola para fora do pad
-            self.y = pad.y + PAD_WEIGHT + BALL_RADIUS if player.side == "top" else pad.y - BALL_RADIUS
+            self.y = pad.y + PAD_WEIGHT + BALL_RADIUS if player.side == TOP else pad.y - BALL_RADIUS
+
+            # Remove o escudo de tempo do jogador
+            player.deactivate_time_shield()
 
             # Decrementa contador de invisibilidade, para deixar o jogador mais próximo de restaurar sua visão
             player.decrement_invisibility_counter()
@@ -494,6 +526,11 @@ class Ball:
         # Calcula a distância a ser movida em x e y
         distance_x = self.vx
         distance_y = self.vy
+
+        if (player1.time_shield and self.y < HEIGHT/3) or (player2.time_shield and self.y > 2*HEIGHT/3):
+            ratio = distance_x / distance_y 
+            distance_y = signal(distance_y) * BALL_VMAX/2
+            distance_x = ratio * distance_y
 
         # Calcula o número de passos a serem dados
         steps_x = max(1, abs(distance_x) // MOVE_LIMIT)
