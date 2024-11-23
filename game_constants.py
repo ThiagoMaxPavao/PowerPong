@@ -40,3 +40,4 @@ HEIGHT = 160
 
 # Poderes
 INVISIBILITY_POWER_INCREMENT = 3 # Em quanto incrementar o contador de invisibilidade quando um jogador utiliza o poder 
+BUFFED_PAD_DURATION_MS = 5000 # Duração do pad buffado

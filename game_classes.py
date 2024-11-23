@@ -215,6 +215,9 @@ class Player:
         self.enemy_player = None
         self.invisibility_counter = 0 # if > 0, invisble. Decrements each time player hits the ball.
 
+        self.buffed_pad = False # Se estiver bufado, bola sempre reflete com velocidade maxima e com direção aletatória
+        self.buffed_pad_activated_time_ms = 0
+
         self.button_states = {0: 0, 1: 0, 2: 0, 3: 0}  # Estado inicial dos botões (todos soltos)
         self.powers = {
             0: {"cost": 1, "action": self.activate_power_1},
@@ -226,6 +229,10 @@ class Player:
     def update(self):
         # Calcula posição baseado no acelerômetro
         self.update_position()
+
+        # Verifica tempo no buffed pad
+        if self.buffed_pad and (utime.ticks_ms() - self.buffed_pad_activated_time_ms > BUFFED_PAD_DURATION_MS):
+            self.deactivate_buffed_pad()
 
         # Verifica pressionamentos dos botões para utilizar os poderes
         for button, power_info in self.powers.items():
@@ -249,7 +256,7 @@ class Player:
 
     def draw(self, fbuf):
         if self.invisibility_counter == 0:
-            self.pad.draw(fbuf)
+            self.pad.draw(fbuf, self.buffed_pad)
         else:
             self.draw_invisibility_count(fbuf)
         
@@ -275,6 +282,7 @@ class Player:
         self.shield.reset()
         self.pad.reset()
         self.deactivate_invisibility()
+        self.deactivate_buffed_pad()
     
     def update_power(self, new_value):
         self.power = new_value
@@ -352,20 +360,29 @@ class Player:
         return True
 
     def activate_power_4(self):
-        print("Poder com custo 1 ativado!")
+        if self.buffed_pad == True:
+            return False
+        
+        self.buffed_pad = True
+        self.buffed_pad_activated_time_ms = utime.ticks_ms() # Marca o tempo de ativação em milissegundos
+
         return True
+
+    def deactivate_buffed_pad(self):
+        self.buffed_pad = False
 
     
 # -------------------- Pad do Jogador --------------------
 
 # Inicializa o pad e a bola
 class PlayerPad:
-    def __init__(self, x, y, color):
+    def __init__(self, x, y, color, buff_color):
         self.start_x = x
         self.start_y = y
         self.x = x
         self.y = y
         self.color = color
+        self.buff_color = buff_color
         self.left_angle = math.pi/4
         self.right_angle = - math.pi/4
         
@@ -378,8 +395,9 @@ class PlayerPad:
         elif self.x + PAD_WIDTH // 2 > WIDTH:
             self.x = WIDTH - PAD_WIDTH // 2
 
-    def draw(self, fbuf):
-        fbuf.rect(int(self.x) - PAD_WIDTH//2, int(self.y), PAD_WIDTH, PAD_WEIGHT, self.color, True)
+    def draw(self, fbuf, buffed_effect=False):
+        color = self.buff_color if buffed_effect else self.color
+        fbuf.rect(int(self.x) - PAD_WIDTH//2, int(self.y), PAD_WIDTH, PAD_WEIGHT, color, True)
     
     def reset(self):
         self.x = self.start_x
@@ -453,7 +471,13 @@ class Ball:
 
             # Ajusta a direção horizontal com base na posição da colisão no pad
             hs = PAD_WIDTH // 2
-            dir = (self.x - pad.x) / hs * 1.25
+            max_modifier = 1.25
+
+            if player.buffed_pad:
+                dir = random.choice([-1, 1]) * max_modifier
+            else:
+                dir = (self.x - pad.x) / hs * max_modifier
+
             self.vx = dir * self.vmax
 
             # Reposiciona a bola para fora do pad

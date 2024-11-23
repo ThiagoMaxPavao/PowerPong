@@ -15,8 +15,8 @@ from peripherals import Peripherals
 peripherals = Peripherals()
 
 # Inicializa os pads e a bola
-pad1 = PlayerPad(WIDTH // 2, 0 + 10 - PAD_WEIGHT, swap_rgb565(st7789.RED))
-pad2 = PlayerPad(WIDTH // 2, HEIGHT - 10, swap_rgb565(st7789.BLUE))
+pad1 = PlayerPad(WIDTH // 2, 0 + 10 - PAD_WEIGHT, swap_rgb565(st7789.RED), swap_rgb565(st7789.YELLOW))
+pad2 = PlayerPad(WIDTH // 2, HEIGHT - 10, swap_rgb565(st7789.BLUE), swap_rgb565(st7789.YELLOW))
 ball = Ball(WIDTH // 2, HEIGHT // 2, swap_rgb565(st7789.WHITE))
 
 # Cria os escudos
