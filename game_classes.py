@@ -29,38 +29,20 @@ class Shield:
     def __init__(self, y, color):
         self.y = y
         self.color = color
-        
-        self.activate_time_us = 0
         self.activated = False
-        self.used = False
-    
-    # Desativa após 5 segundos
-    def update(self):
-        if utime.ticks_us() - self.activate_time_us > 5000000:
-            self.activated = False
     
     def draw(self, fbuf):
         if self.activated:
             fbuf.rect(0, self.y, WIDTH, SHIELD_WEIGHT, self.color, True)
     
     def activate(self):
-        if self.used: # Ativa apenas se não foi utilizado ainda
-            return
-        
-        self.used = True
-        self.activate_time_us = utime.ticks_us()
         self.activated = True
     
     def deactivate(self):
         self.activated = False
     
-    def available(self):
-        return not self.used
-    
     def reset(self):
-        self.activate_time_us = 0
         self.activated = False
-        self.used = False
 
 # -------------------- Placar --------------------
 
