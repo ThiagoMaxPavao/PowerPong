@@ -5,8 +5,10 @@ from neopixel import NeoPixel
 from ssd1306 import SSD1306_I2C
 import tft_config
 import framebuf
+import st7789
 from glove import Glove
 
+from util import *
 from game_constants import *
 
 class Peripherals:
@@ -15,6 +17,7 @@ class Peripherals:
         display = tft_config.config()
         display.init()
         display.on()
+        display.fill(st7789.BLACK)
         self.display = display
 
         # Inicializa framebuffer
@@ -34,7 +37,9 @@ class Peripherals:
         self.glove2 = Glove(I2C0)
 
         # Buzzer
-        self.buzzer = PWM(Pin(10))
+        buzzer = PWM(Pin(10))
+        buzzer.duty_u16(0)
+        self.buzzer = buzzer
 
         # Joystick
         self.joystick_x = ADC(Pin(27))
@@ -42,10 +47,14 @@ class Peripherals:
 
         # Configuração Display OLED
         i2c = SoftI2C(scl=Pin(15), sda=Pin(14))
-        self.oled = SSD1306_I2C(128, 64, i2c)
+        oled = SSD1306_I2C(128, 64, i2c)
+        clear_oled_screen(oled)
+        self.oled = oled
 
         # Configuração Neopixel - Matriz de LEDs
         self.np = NeoPixel(Pin(7), NUM_LEDS)
+        for i in range(NUM_LEDS): # Apaga a tela
+            self.np[i] = (0, 0, 0)
 
         # Configuração dos botões da BitDogLab
         self.button_a = Pin(5, Pin.IN, Pin.PULL_UP)
