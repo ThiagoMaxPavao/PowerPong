@@ -17,11 +17,16 @@ class Glove:
         self.rgb_pins = rgb_pins or [1, 2, 3]
         self.button_pins = button_pins or [4, 5, 6, 7]
 
-        # Estados atuais dos LEDs de power
-        self.current_power_led_states = [0] * len(self.power_led_pins)
+        # Estado de debounce para cada botão
+        self.last_release_time = [0] * len(self.button_pins)  # Tempo em que o botão foi detectado como solto
+        self.last_state = [0] * len(self.button_pins)  # Estado lógico do botão (pressionado ou solto)
+        self.debounce_duration = 200  # Duração mínima para considerar o botão solto (em ms)
 
         # Inicializar os pinos dos LEDs e botões
         self._initialize_pcf_pins()
+
+        # Estados atuais dos LEDs de power
+        self.current_power_led_states = [0] * len(self.power_led_pins)
 
         # Inicializar o MPU6050
         self.mpu.write_accel_range(0)  # range de maior precisão
@@ -60,14 +65,38 @@ class Glove:
         return angle
 
     def get_button_state(self, index):
+        """
+        Detecta e gerencia o estado do botão com debounce.
+        """
         pin = self.button_pins[index]
-        return self.pcf.pin(pin)
-        
+        raw_state = self.pcf.pin(pin)  # Lê o estado bruto do botão (0 ou 1)
+        current_time = utime.ticks_ms()
+
+        if raw_state == 0:  # Detecta como "solto"
+            if self.last_state[index] == 1:  # Estava pressionado antes
+                # Marca o tempo em que o botão começou a ser detectado como solto
+                if self.last_release_time[index] == 0:
+                    self.last_release_time[index] = current_time
+
+                # Verifica se está consistentemente solto por 200ms
+                elif utime.ticks_diff(current_time, self.last_release_time[index]) > self.debounce_duration:
+                    self.last_state[index] = 0  # Considera como "realmente solto"
+                    return 0  # Retorna que está solto
+                return 1
+            else:
+                return 0
+
+        else:  # Detecta como "pressionado"
+            self.last_release_time[index] = 0  # Reseta o tempo de solto
+            if self.last_state[index] == 0:  # Transição de solto para pressionado
+                self.last_state[index] = 1  # Considera pressionado
+            return 1  # Botão pressionado
+
     def get_button_states(self):
         """Retorna o estado de todos os botões (0 ou 1)."""
         states = []
-        for pin in self.button_pins:
-            states.append(self.pcf.pin(pin))  # Retorna 0 (não pressionado) ou 1 (pressionado)
+        for i in range(4):
+            states.append(self.get_button_state(i))  # Retorna 0 (não pressionado) ou 1 (pressionado)
         return states
 
     def set_power_led(self, led, state):
