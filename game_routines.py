@@ -142,8 +142,8 @@ def choose_sets_routine(game, peripherals):
 # -------------------- GAME RUNNING --------------------
 
 def game_running_routine(game, peripherals):
-    game.player1.round_init()
-    game.player2.round_init()
+    game.player1.set_button_states()
+    game.player2.set_button_states()
 
     while not game.ball.out():
 
@@ -188,6 +188,9 @@ def game_break_routine(game, peripherals):
     time_start_us = 0
     starting = False
     
+    game.player1.set_button_states()
+    game.player2.set_button_states()
+    
     while True:
         clear_fbuf(peripherals.fbuf)
 
@@ -199,6 +202,12 @@ def game_break_routine(game, peripherals):
 
         game.player1.show_ready(peripherals.fbuf)
         game.player2.show_ready(peripherals.fbuf)
+        
+        game.player1.handle_invert_controls()
+        game.player2.handle_invert_controls()
+
+        game.player1.show_invert_controls(peripherals.fbuf)
+        game.player2.show_invert_controls(peripherals.fbuf)
 
         game.ball.draw(peripherals.fbuf)
         

@@ -272,7 +272,7 @@ class Player:
 
     def draw_time_shield(self, fbuf):
         y = int(10)
-        for i in range(5):
+        for i in range(7):
             y += 6
             fbuf.hline(0, y if self.side == TOP else HEIGHT - y, WIDTH, self.time_shield_color)
     
@@ -363,7 +363,7 @@ class Player:
     def deactivate_invisibility(self):
         self.invisibility_counter = 0
 
-    def round_init(self):
+    def set_button_states(self):
         # Inicializa estado dos botões, caso algum jogador comece pressionando algum botão
         for button, power_info in self.powers.items():
             current_state = self.glove.get_button_state(button)
@@ -400,6 +400,26 @@ class Player:
 
     def deactivate_buffed_pad(self):
         self.buffed_pad = False
+    
+    def handle_invert_controls(self):
+        button = 1
+        current_state = self.glove.get_button_state(button)
+        if current_state == 1 and self.button_states[button] == 0:  # Botão passou de solto para pressionado
+            self.invert_controls = not self.invert_controls
+        self.button_states[button] = current_state  # Atualiza o estado do botão
+    
+    def show_invert_controls(self, fbuf):
+        if self.button_states[1] == 0:
+            return
+
+        if self.side == TOP:
+            y = HEIGHT//4 - 10
+        else:
+            y = HEIGHT - HEIGHT//4 - 8 + 10
+        
+        text_width = 15*8
+        
+        fbuf.text("INVERT CONTROLS", (WIDTH - text_width)//2, y, st7789.WHITE)
     
 # -------------------- Pad do Jogador --------------------
 
