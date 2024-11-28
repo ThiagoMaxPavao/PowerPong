@@ -85,7 +85,7 @@ projeto, que pedia que o firmware atualizado fosse disponibilizado. [PIBSAS](htt
 
 O fluxo do programa se baseia em uma máquina de estados, que pode ser vista na Figura abaixo
 
-> Inserir figura da máquina de estados aqui
+![Máquina de estados do projeto](https://github.com/user-attachments/assets/f45a0cf4-fdf4-40d4-9e5f-160254ea969e)
 
 As tarefas de cada estado são as seguintes:
 
@@ -103,13 +103,13 @@ As tarefas de cada estado são as seguintes:
 
 O sensor retorna valores de aceleração em três eixos, mas utilizamos apenas dois para calcular o ângulo em que o dispositivo está sendo segurado, conforme ilustrado na figura abaixo:
 
-> Figura ilustrando o funcionamento do sensor
+![Acelerometro](https://github.com/user-attachments/assets/1dffd47a-2043-4bf4-8d84-0ea321bc047a)
 
-Teta = arctan(ay/ax)
+![Formula do angulo](https://github.com/user-attachments/assets/f623fb4a-ab9a-4e30-9579-c2bebb573e21)
 
 Devido a flutuações nas leituras do sensor, aplicamos um filtro digital passa-baixas para suavizar os valores do ângulo, com compensação para lidar com a descontinuidade angular (que ocorre quando o valor do ângulo salta de -π para π). Após isso, os valores de ângulo são escalados para uma posição linear, correspondente ao y do pad na tela. Essa conversão relaciona o intervalo de -45 a 45 graus com os limites da tela, que vão de PAD_WIDTH//2 até WIDTH - PAD_WIDTH//2. Aqui, WIDTH é o tamanho da tela e PAD_WIDTH é a largura do pad do jogador. Por fim, o programa valida a posição calculada, garantindo que o pad não saia da tela. A figura a seguir ilustra esse processo de forma simplificada.
 
-> Figura mostrando fluxo de dados do sensor
+![Fluxo de dados do sensor](https://github.com/user-attachments/assets/5a8bcb13-34fd-4cb4-85a5-d28a4201f551)
 
 ### Velocidade da bolinha
 
