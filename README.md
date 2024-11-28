@@ -65,6 +65,9 @@ Fotos da luva pronta
 
 ## Documentação de Software
 
+Biblioteca utilizada
+Explicação do firmware gerado
+
 ### Maquina de estados
 
 ### Lógica do sensor
@@ -72,4 +75,6 @@ Fotos da luva pronta
 ### Velocidade da bolinha
 
 ### Organização dos Arquivos
+
+Os arquivos podem ser encontrados nesta [pasta](/code)
 
