@@ -65,61 +65,50 @@ Fotos da luva pronta
 
 ## Documentação de Software
 
-O software foi desenvolvido em MicroPython, utilizando algumas bibliotecas escritas em Python, que estão
-inclusas aqui no GitHub também.
+O software foi desenvolvido em MicroPython, utilizando algumas bibliotecas escritas em Python, que estão inclusas neste repositório.
 
-Além destas bibliotecas escritas em Python, foi carregada junto ao firmware da placa uma biblioteca escrita
-em C, para interação com o display. Isto foi feito devido ao grande número de dados comunicados com o
-display, em que utilizar uma biblioteca em Python se mostrou ineficiente.
+Além dessas bibliotecas em Python, uma biblioteca escrita em C foi incorporada ao firmware da placa para interagir com o display. Essa abordagem foi necessária devido ao alto volume de dados trocados com o display, que tornava uma solução em Python ineficiente.
 
-A biblioteca utilizada foi [st7789_mpy](https://github.com/russhughes/st7789_mpy), no entanto, ao utilizar
-o firmware disponibilizado no repositório da biblioteca ocorreram alguns erros, acreditamos que tenha sido
-por causa da versão do MicroPython com a que ela tinha sido compilada.
+A biblioteca utilizada para essa interação foi [st7789_mpy](https://github.com/russhughes/st7789_mpy). Contudo, ao utilizar o firmware disponibilizado no repositório original, encontramos erros que acreditamos serem causados pela incompatibilidade entre a versão do MicroPython usada e aquela com a qual o firmware foi compilado.
 
-Para contornar este problema, foi gerado firmware com a última versão de MicroPython disponível até o momento
-a versão 1.24. O arquivo está disponível na raiz do repositório, e chama-se firmware.uf2. O processo de
-geração deste firmware, com a biblioteca carregada, foi obtido de uma resposta de uma Issue colocada no
-projeto, que pedia que o firmware atualizado fosse disponibilizado. [PIBSAS](https://github.com/russhughes/st7789_mpy/issues/168#issuecomment-2342353619) descreve o que deve ser feito, e funcionou corretamente.
+Para resolver o problema, geramos um firmware com a última versão estável do MicroPython disponível (v1.24), incluindo a biblioteca necessária. Esse firmware está disponível na raiz do repositório, no arquivo firmware.uf2. O processo de geração foi baseado em uma solução detalhada em uma issue do repositório da biblioteca. Você pode consultar a explicação [aqui](https://github.com/russhughes/st7789_mpy/issues/168#issuecomment-2342353619). O procedimento funcionou corretamente.
 
-### Maquina de estados
+### Máquina de Estados
 
-O fluxo do programa se baseia em uma máquina de estados, que pode ser vista na Figura abaixo
+O fluxo do programa é baseado em uma máquina de estados, representada na figura abaixo:
 
 ![Máquina de estados do projeto](https://github.com/user-attachments/assets/f45a0cf4-fdf4-40d4-9e5f-160254ea969e)
 
-As tarefas de cada estado são as seguintes:
+Cada estado executa as seguintes tarefas:
 
-- MENU: Exibe o nome do jogo e a instrução de início piscando. O programa aguarda até que o botão A seja pressionado para avançar para o próximo estado.
+MENU: Exibe o nome do jogo e as instruções iniciais piscando. O programa aguarda que o botão A seja pressionado para avançar ao próximo estado.
 
-- CHOOSE SETS: Mostra na tela as opções de quantidade de sets (melhor de um, três ou cinco) e monitora o deslocamento horizontal do joystick para alterar a opção selecionada. Ao pressionar o botão A, a opção de número de sets é confirmada, e o jogo avança para o próximo estado.
+CHOOSE SETS: Mostra na tela as opções de quantidade de sets (melhor de 1, 3 ou 5). O joystick horizontal é usado para alternar entre as opções. Pressionar o botão A confirma a escolha e avança para o próximo estado.
 
-- GAME BREAK: Aguarda até que ambos os jogadores pressionem seus botões simultaneamente, indicando que estão prontos para o início da partida.
+GAME BREAK: Aguarda ambos os jogadores pressionarem seus botões simultaneamente, indicando que estão prontos para começar a partida.
 
-- GAME RUNNING: Monitora os dados do acelerômetro para atualizar a posição dos pads dos jogadores, verifica o uso do poder de escudo e simula a física da bolinha, incluindo colisões com as paredes e com os pads dos jogadores.
+GAME RUNNING: Atualiza a posição dos pads dos jogadores com base nos dados do acelerômetro, verifica o uso do poder de escudo e simula a física da bolinha, incluindo colisões com as paredes e pads.
 
-- END: Exibe uma animação, toca a música de vitória e mostra na tela o nome do jogador vencedor.
+END: Mostra uma animação, toca a música de vitória e exibe na tela o nome do jogador vencedor.
 
-### Lógica do sensor
+### Lógica do Sensor
 
-O sensor retorna valores de aceleração em três eixos, mas utilizamos apenas dois para calcular o ângulo em que o dispositivo está sendo segurado, conforme ilustrado na figura abaixo:
+O sensor retorna valores de aceleração em três eixos, mas apenas dois são utilizados para calcular o ângulo de inclinação do dispositivo, como ilustrado abaixo:
 
 ![Acelerometro](https://github.com/user-attachments/assets/1dffd47a-2043-4bf4-8d84-0ea321bc047a)
 
 ![Formula do angulo](https://github.com/user-attachments/assets/f623fb4a-ab9a-4e30-9579-c2bebb573e21)
 
-Devido a flutuações nas leituras do sensor, aplicamos um filtro digital passa-baixas para suavizar os valores do ângulo, com compensação para lidar com a descontinuidade angular (que ocorre quando o valor do ângulo salta de -π para π). Após isso, os valores de ângulo são escalados para uma posição linear, correspondente ao y do pad na tela. Essa conversão relaciona o intervalo de -45 a 45 graus com os limites da tela, que vão de PAD_WIDTH//2 até WIDTH - PAD_WIDTH//2. Aqui, WIDTH é o tamanho da tela e PAD_WIDTH é a largura do pad do jogador. Por fim, o programa valida a posição calculada, garantindo que o pad não saia da tela. A figura a seguir ilustra esse processo de forma simplificada.
+Devido a flutuações nas leituras do sensor, aplicamos um filtro digital passa-baixas para suavizar os valores do ângulo. Este filtro também compensa descontinuidades angulares (como a transição de -π para π). Após o processamento, os valores são escalados para representar a posição vertical do pad na tela. Essa conversão associa um intervalo de -45° a 45° aos limites da tela, que vão de PAD_WIDTH//2 até WIDTH - PAD_WIDTH//2, onde WIDTH é a largura da tela e PAD_WIDTH é a largura do pad.
+
+Por fim, garantimos que a posição do pad permaneça dentro dos limites da tela. O processo é ilustrado na figura abaixo:
 
 ![Fluxo de dados do sensor](https://github.com/user-attachments/assets/5a8bcb13-34fd-4cb4-85a5-d28a4201f551)
 
-### Velocidade da bolinha
+### Velocidade da Bolinha
 
-Como comentado no início, a velocidade da bolinha aumenta gradualmente cada vez que ela é rebatida.
-Para manter o jogo dinâmico, a velocidade inicial da bola em cada round se ajusta ao desempenho dos
-jogadores. Isto é feito configurando uma velocidade mínima que ela pode estar, que é a velocidade
-no primeiro round. Em seguida, ao fim de cada round ela perde 30% de sua velocidade, permitindo que
-os jogadores retornem de um ponto em que a bola não esteja tão rápida nem lenta demais.
+A velocidade da bolinha aumenta gradualmente a cada rebote, tornando o jogo mais dinâmico. No início de cada round, a velocidade inicial é ajustada com base no desempenho dos jogadores. Após cada round, a bolinha perde 30% de sua velocidade final, equilibrando o ritmo do jogo para que a bola não fique nem muito lenta nem muito rápida.
 
 ### Organização dos Arquivos
 
-Os arquivos podem ser encontrados nesta [pasta](/code)
-
+Os arquivos estão disponíveis nesta [pasta](/code).
