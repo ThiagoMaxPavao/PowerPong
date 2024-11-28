@@ -65,8 +65,21 @@ Fotos da luva pronta
 
 ## Documentação de Software
 
-Biblioteca utilizada
-Explicação do firmware gerado
+O software foi desenvolvido em MicroPython, utilizando algumas bibliotecas escritas em Python, que estão
+inclusas aqui no GitHub também.
+
+Além destas bibliotecas escritas em Python, foi carregada junto ao firmware da placa uma biblioteca escrita
+em C, para interação com o display. Isto foi feito devido ao grande número de dados comunicados com o
+display, em que utilizar uma biblioteca em Python se mostrou ineficiente.
+
+A biblioteca utilizada foi [st7789_mpy](https://github.com/russhughes/st7789_mpy), no entanto, ao utilizar
+o firmware disponibilizado no repositório da biblioteca ocorreram alguns erros, acreditamos que tenha sido
+por causa da versão do MicroPython com a que ela tinha sido compilada.
+
+Para contornar este problema, foi gerado firmware com a última versão de MicroPython disponível até o momento
+a versão 1.24. O arquivo está disponível na raiz do repositório, e chama-se firmware.uf2. O processo de
+geração deste firmware, com a biblioteca carregada, foi obtido de uma resposta de uma Issue colocada no
+projeto, que pedia que o firmware atualizado fosse disponibilizado. [PIBSAS](https://github.com/russhughes/st7789_mpy/issues/168#issuecomment-2342353619) descreve o que deve ser feito, e funcionou corretamente.
 
 ### Maquina de estados
 
