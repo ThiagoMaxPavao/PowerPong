@@ -65,4 +65,11 @@ Fotos da luva pronta
 
 ## Documentação de Software
 
+### Maquina de estados
+
+### Lógica do sensor
+
+### Velocidade da bolinha
+
+### Organização dos Arquivos
 
