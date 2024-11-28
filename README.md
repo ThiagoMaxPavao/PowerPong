@@ -83,9 +83,41 @@ projeto, que pedia que o firmware atualizado fosse disponibilizado. [PIBSAS](htt
 
 ### Maquina de estados
 
+O fluxo do programa se baseia em uma máquina de estados, que pode ser vista na Figura abaixo
+
+> Inserir figura da máquina de estados aqui
+
+As tarefas de cada estado são as seguintes:
+
+- MENU: Exibe o nome do jogo e a instrução de início piscando. O programa aguarda até que o botão A seja pressionado para avançar para o próximo estado.
+
+- CHOOSE SETS: Mostra na tela as opções de quantidade de sets (melhor de um, três ou cinco) e monitora o deslocamento horizontal do joystick para alterar a opção selecionada. Ao pressionar o botão A, a opção de número de sets é confirmada, e o jogo avança para o próximo estado.
+
+- GAME BREAK: Aguarda até que ambos os jogadores pressionem seus botões simultaneamente, indicando que estão prontos para o início da partida.
+
+- GAME RUNNING: Monitora os dados do acelerômetro para atualizar a posição dos pads dos jogadores, verifica o uso do poder de escudo e simula a física da bolinha, incluindo colisões com as paredes e com os pads dos jogadores.
+
+- END: Exibe uma animação, toca a música de vitória e mostra na tela o nome do jogador vencedor.
+
 ### Lógica do sensor
 
+O sensor retorna valores de aceleração em três eixos, mas utilizamos apenas dois para calcular o ângulo em que o dispositivo está sendo segurado, conforme ilustrado na figura abaixo:
+
+> Figura ilustrando o funcionamento do sensor
+
+Teta = arctan(ay/ax)
+
+Devido a flutuações nas leituras do sensor, aplicamos um filtro digital passa-baixas para suavizar os valores do ângulo, com compensação para lidar com a descontinuidade angular (que ocorre quando o valor do ângulo salta de -π para π). Após isso, os valores de ângulo são escalados para uma posição linear, correspondente ao y do pad na tela. Essa conversão relaciona o intervalo de -45 a 45 graus com os limites da tela, que vão de PAD_WIDTH//2 até WIDTH - PAD_WIDTH//2. Aqui, WIDTH é o tamanho da tela e PAD_WIDTH é a largura do pad do jogador. Por fim, o programa valida a posição calculada, garantindo que o pad não saia da tela. A figura a seguir ilustra esse processo de forma simplificada.
+
+> Figura mostrando fluxo de dados do sensor
+
 ### Velocidade da bolinha
+
+Como comentado no início, a velocidade da bolinha aumenta gradualmente cada vez que ela é rebatida.
+Para manter o jogo dinâmico, a velocidade inicial da bola em cada round se ajusta ao desempenho dos
+jogadores. Isto é feito configurando uma velocidade mínima que ela pode estar, que é a velocidade
+no primeiro round. Em seguida, ao fim de cada round ela perde 30% de sua velocidade, permitindo que
+os jogadores retornem de um ponto em que a bola não esteja tão rápida nem lenta demais.
 
 ### Organização dos Arquivos
 
