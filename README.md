@@ -150,4 +150,28 @@ A velocidade da bolinha aumenta gradualmente a cada rebote, tornando o jogo mais
 
 ### Organização dos Arquivos
 
-Os arquivos estão disponíveis nesta [pasta](/code).
+Os arquivos que compõe a memória da Raspberry Pi Pico, necessários para executar o jogo são os mostrados abaixo, e estão disponíveis nesta [pasta](/code).
+
+1. Lógica principal do programa
+    - *main.py*: Inicialização e execução da máquina de estados.
+
+2. Lógica de jogo
+    - *game_classes.py*: Classes da lógica de Jogo, como a classe de jogador, da bola e do escudo.
+    - *game_constants.py*: Valores constantes como tamanhos dos jogadores, dimensões da tela e outros.
+    - *game_routines.py*: Rotinas de execução de cada estado da máquina de estados. Responsável por orquestrar os objetos definidos a depender do estado corrente.
+
+3. Periféricos
+    - *mpu6050.py*: Biblioteca para interação com o MPU6050, sensor I2C acelerômetro e giroscópio de 6 eixos.
+    - *pcf8575.py*: Biblioteca para interação com o PCF8575, extensor de I/O I2C com diversas portas GPIO.
+    - *ssd1306.py*: Biblioteca para interação com o SSD1306, display OLED I2C 128x64px.
+    - *tft_config.py*: Arquivo de configuração do display LCD SPI utilizado, definindo a equivalência das portas do display com as da Raspberry.
+    - *glove.py*: Biblioteca criada para facilitar interação com os componentes presentes na luva, oferencendo acesso direto ao valor do ângulo em que a luva está posicionada e aos periféricos conectados ao extensor de I/O. Também executa uma rotina de testes na luva se executado diretamente.
+    - *peripherals.py*: Classe de incialização de todos os periféricos controlados pelo projeto, também carrega uma referência a cada um deles para evitar a necessidade de passagem de muitos parâmetros para as rotinas do jogo.
+
+4. Funções auxiliares
+    - *util.py*
+
+5. Fontes para escrita no display LCD
+    - *vga1_16x32.py*
+    - *vga1_8x8.py*
+    - *vga1_bold_16x32.py*
