@@ -30,36 +30,75 @@ eficazes quando usados no momento certo.
 
 ## Sobre o Jogo
 
-Regras básicas do jogo
-Lógica de sets
-Lógica de vai a 2
-Explicação de início, quando os dois estão prontos (ready)
-Inversão dos controles (esquerda/direita), dependendo da disposição dos jogadores
-Explicação dos poderes, as cargas
-Explicação de cada poder individualmente
-Aviso quando os poderes estão cheios, para lembrar de gastar 
+Este projeto é inspirado no clássico jogo *Pong*, mas com algumas mecânicas inovadoras para torná-lo ainda mais desafiador e interativo. 
+
+### Regras Básicas
+
+- **Objetivo**: O jogador deve defender sua base enquanto tenta ultrapassar a base adversária, movimentando seu pad com os gestos das mãos.
+- **Pontuação**: O jogador que conseguir ultrapassar a base do oponente marca 1 ponto. 
+- **Cargas**: Após cada ponto, os jogadores recebem "cargas" que podem ser utilizadas para ativar habilidades especiais (detalhadas abaixo).
+- **Sets**: A cada 5 pontos acumulados, o jogador vence 1 set. O primeiro a alcançar o número de sets definidos no início do jogo será o vencedor.
+- **Desempate**: Caso ambos os jogadores empatem em 4 pontos a 4, entra em vigor a regra "vai a 2": o jogador precisa ganhar dois pontos consecutivos para vencer o set.
+
+### Controles e Configurações
+
+1. **Menu Inicial**: 
+   - No início do jogo, é exibido um menu. Pressione o botão **A** para acessar as configurações de número de sets (1, 3 ou 5).
+   - Após selecionar o número de sets, os jogadores podem iniciar a partida.
+
+2. **Movimentação dos Pads**:
+   - Os pads são controlados pela rotação das mãos.
+   - É possível inverter os controles pressionando o dedão contra o dedo médio, permitindo maior personalização para o jogador.
+
+3. **Início do Jogo**:
+   - Para começar, ambos os jogadores devem pressionar o dedão contra o dedo indicador simultaneamente. Quando isso acontecer, a bola será lançada e o jogo começará.
+
+### Habilidades Especiais
+
+As cargas acumuladas ao longo da partida podem ser gastas em habilidades estratégicas. Cada habilidade possui um custo específico:
+
+1. **Invisibilidade**  
+   - **Custo**: 1 carga  
+   - O adversário do jogador que ativar esta habilidade ficará invisível, dificultando a visualização do pad. A invisibilidade dura por 3 rebatidas e pode ser acumulada por ativações consecutivas.
+
+2. **Escudo**  
+   - **Custo**: 2 cargas  
+   - O jogador ganha um escudo que protege sua base. O escudo dura até a próxima rebatida ou até que o jogador marque um ponto.
+
+3. **Atemporal**  
+   - **Custo**: 3 cargas  
+   - Reduz a velocidade da bola temporariamente, facilitando sua rebatida. A habilidade dura apenas uma rebatida.
+
+4. **Power Pong**  
+   - **Custo**: 4 cargas  
+   - Ativa o buff máximo no pad do jogador. Independente do ponto onde a bola atingir o pad, ela será rebatida com a velocidade lateral máxima, tornando difícil para o adversário reagir.
+
+### Limite de Cargas
+
+- A capacidade máxima de cargas é 4.  
+- Caso o jogador atinja o limite e tente receber uma carga extra, será alertado por meio do buzzer e LEDs piscando na luva.
 
 ## Documentação de Hardware
 
-### Componentes utilizados
+## Componentes utilizados
 
 Componentes da bitdog e externos que foram utilizados, incluindo a raspberry pi pico
 
-### Tabelas de conexão
+## Tabelas de conexão
 
 Display com a raspberry, luvas com I2C
 Inserir ou indicar referência para conexão dos periféricos da bitdoglab
 
-### Esquemático do circuito da luva
+## Esquemático do circuito da luva
 
 Projeto do circuito da luva, com breve explicação sobre os circuitos, por exemplo pull down, conexão com negativo no PCF, pq não fornece corrente suficiente se ligado ao contrário
 Falar também da ligação que fizemos no PCF, curtando VCC e VDD para fornecer diretamente a mesma alimentação ligada ao módulo para os dispositivos controlador em suas portas
 
-### Projeto da placa de circuito impresso desenvolvido
+## Projeto da placa de circuito impresso desenvolvido
 
 Imagem da PCB
 
-### Construção mecânica
+## Construção mecânica
 
 Fotos da luva pronta
 
