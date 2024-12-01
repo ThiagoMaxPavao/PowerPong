@@ -82,7 +82,11 @@ As cargas acumuladas ao longo da partida podem ser gastas em habilidades estrat�
 
 O projeto de hardware da Luva foi realizado no Kicad, os arquivos podem ser encontrados nesta [pasta](/PCB_Luva).
 
-Os arquivos de produção *.drl* e *.gbr* gerados e utilizados para fabricação desta primeira versão estão disponíveis nesta [pasta](/Fabricação_PCB). 
+Os arquivos de produção *.drl* e *.gbr* gerados e utilizados para fabricação desta primeira versão estão disponíveis nesta [pasta](/Fabricação_PCB).
+
+Um diagrama de blocos geral do projeto pode ser visto abaixo
+
+![diagrama de blocos geral](https://github.com/user-attachments/assets/8280cf6e-f042-4093-a653-b59f1c179278)
 
 ## Componentes utilizados
 
