@@ -302,3 +302,32 @@ Os arquivos que compõe a memória da Raspberry Pi Pico, necessários para execu
     - *vga1_16x32.py*
     - *vga1_8x8.py*
     - *vga1_bold_16x32.py*
+
+## Resultados
+
+O projeto foi concluído com sucesso e proporcionou um grande aprendizado para a equipe. Como o projeto é um jogo, nos divertimos muito durante o desenvolvimento, especialmente ao imaginar a dinâmica e a diversão que os jogadores teriam. Utilizamos nossa criatividade para projetar os comandos do controle, os poderes e as interações do jogo.
+
+### Desafios Enfrentados
+
+Durante o desenvolvimento, enfrentamos alguns desafios importantes que contribuíram para a melhoria contínua do projeto:
+
+- **Substituição do Display**: No início, o display originalmente escolhido teve que ser substituído, o que exigiu ajustes significativos no código. Embora isso tenha demandado tempo, essa experiência nos ajudou a modularizar o código, facilitando futuras alterações e melhorias.
+  
+- **Atrasos na Produção da Placa**: O processo de impressão da placa sofreu atrasos, o que impediu a realização de testes e afetou o desenvolvimento de funcionalidades adicionais, como novas utilidades para o LED RGB e o buzzer.
+
+### Melhorias Futuras
+
+Identificamos diversas áreas para melhorar o projeto em versões futuras:
+
+#### 1. **Hardware**
+   - **Redução do Tamanho da Placa**: A placa pode ser compactada, eliminando o uso de módulos como o PCF8575 e o MPU6050 e substituindo-os por componentes individuais.
+   - **Uso de Componentes SMD**: A utilização de componentes SMD (Surface-Mounted Device) ajudará a reduzir ainda mais o tamanho da placa.
+   - **Conforto para o Jogador**: Melhorar o material e o método de fixação da luva, garantindo maior conforto ao jogador durante o uso.
+   
+#### 2. **Funcionalidades**
+   - **Uso das Portas Disponíveis**: Aproveitar as portas restantes do PCF8575 para adicionar mais LEDs para indicar níveis de carga ou novos poderes.
+   - **Otimização do Código**: Reescrever o código em C para melhorar a eficiência e tornar o jogo mais dinâmico.
+
+Essas melhorias visam tornar o projeto mais eficiente, compacto e com maior interatividade para o usuário.
+
+  
