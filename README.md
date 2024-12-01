@@ -80,6 +80,10 @@ As cargas acumuladas ao longo da partida podem ser gastas em habilidades estrat�
 
 ## Documentação de Hardware
 
+O projeto de hardware da Luva foi realizado no Kicad, os arquivos podem ser encontrados nesta [pasta](/PCB_Luva).
+
+Os arquivos de produção *.drl* e *.gbr* gerados e utilizados para fabricação desta primeira versão estão disponíveis nesta [pasta](/Fabricação_PCB). 
+
 ## Componentes utilizados
 
 Os componentes utilizados neste projeto estão organizados em dois grupos: **componentes inclusos no kit da placa BitDogLabs** e **componentes externos**.
@@ -106,36 +110,35 @@ Os componentes utilizados neste projeto estão organizados em dois grupos: **com
 
 ### Componentes Externos
 
-- **2 Expansores IO I2C (PCF8575)**  
-  Expandem a porta I2C para conectar os botões de habilidades, LEDs de sinalização de carga de poder, buzzer de alerta de carga cheia e LED RGB para identificar o jogador.  
-  - [Comprar no Aliexpress](https://pt.aliexpress.com/item/1005007080964232.html)
-
-- **2 MPU-6050**  
-  Sensores utilizados para controlar os pads de cada jogador através da rotação da mão.  
-  - [Comprar no Mercado Livre](https://produto.mercadolivre.com.br/MLB-1922679879-modulo-mpu6050-gy-521-sensor-acelermetro-giroscopio-3-eixos-_JM)
-
 - **Display LCD TFT 128x160**  
   Exibe o jogo, o menu, e as partidas.  
   - [Comprar no Mercado Livre](https://produto.mercadolivre.com.br/MLB-5125731078-modulo-de-tela-lcd-tft-de-18-128x160-spi-color-st7735-_JM)
 
-- **7 Resistores de 200Ω**  
+- **1x2 (1 por luva) Expansores IO I2C (PCF8575)**  
+  Expandem a porta I2C para conectar os botões de habilidades, LEDs de sinalização de carga de poder, buzzer de alerta de carga cheia e LED RGB para identificar o jogador.  
+  - [Comprar no Aliexpress](https://pt.aliexpress.com/item/1005007080964232.html)
+
+- **1x2 (1 por luva) MPU-6050**  
+  Sensores utilizados para controlar os pads de cada jogador através da rotação da mão.  
+  - [Comprar no Mercado Livre](https://produto.mercadolivre.com.br/MLB-1922679879-modulo-mpu6050-gy-521-sensor-acelermetro-giroscopio-3-eixos-_JM)
+
+- **7x2 (7 por luva) Resistores de 200Ω**  
   Controlam a intensidade da luz dos LEDs de carga e protegem o LED RGB contra sobrecorrente.  
   - [Comprar no Mercado Livre](https://produto.mercadolivre.com.br/MLB-1624979305-resistor-200-ohm-5-10pecas-_JM)
 
-- **4 Resistores de 5kΩ (ou valor próximo)**  
+- **4x2 (4 por luva) Resistores de 5kΩ (ou valor próximo)**  
   Usados como lógica pull-down para os botões de habilidades.
   - [Comprar no Mercado Livre](https://produto.mercadolivre.com.br/MLB-1722095500-kit-10-x-resistor-47k-ohm-14w-5-projeto-arduino-raspberry-_JM?matt_tool=14213447&matt_word=&matt_source=bing&matt_campaign=MLB_ML_BING_AO_CE-ALL-ALL_X_PLA_ALLB_TXS_ALL&matt_campaign_id=382858295&matt_ad_group=CE&matt_match_type=e&matt_network=o&matt_device=c&matt_keyword=default&msclkid=34bebad5f9b4163fa580dd9956da3a71&utm_source=bing&utm_medium=cpc&utm_campaign=MLB_ML_BING_AO_CE-ALL-ALL_X_PLA_ALLB_TXS_ALL&utm_term=4581596253419739&utm_content=CE)
 
-
-- **4 LEDs (brancos ou azuis)**  
+- **4x2 (4 por luva) LEDs (brancos ou azuis)**  
   Indicadores de carga de poder armazenada.  
   - [Comprar no Mercado Livre](https://produto.mercadolivre.com.br/MLB-2015068823-50x-led-5mm-azul-difuso-_JM)
 
-- **1 Buzzer Passivo 5V**  
+- **1x2 (1 por luva) Buzzer Passivo 5V**  
   Sinaliza que as cargas de poder estão cheias.  
   - [Comprar no Mercado Livre](https://produto.mercadolivre.com.br/MLB-2664375798-buzzer-passivo-5v-continuo-arduino-raspberry-pic-arm-_JM)
 
-- **1 LED RGB (ânodo comum)**  
+- **1x2 (1 por luva) LED RGB (ânodo comum)**  
   Identifica o jogador através da cor do pad.  
   - [Comprar no Mercado Livre](https://produto.mercadolivre.com.br/MLB-3914705318-kit-10-leds-rgb-5mm-nodo-comum-_JM)
 
@@ -158,7 +161,7 @@ Nesta parte do esquemático, são exibidas as conexões entre o **PCF8575**, **M
 
 Nesta seção, é apresentada a lógica para os botões:
 
-- **D1 (dedão)**: Conectado ao **VDD**, com tensão de 3.3V.
+- **D1 (polegar)**: Conectado ao **VDD**, com tensão de 3.3V.
 - **D2, D3, D4 e D5 (outros dedos)**: Conectados a resistores de 5kΩ configurados em uma lógica **Pull-Down**, ligados ao **GND**.
 
 Quando o dedão toca outro dedo, o circuito se fecha, funcionando de maneira similar ao pressionar um botão. O nível lógico resultante é lido pelas portas do **PCF8575**.
@@ -205,6 +208,11 @@ Outra conexão importante foi realizada com o LCD, seguindo o esquema de ligaç�
 
 Para facilitar e tornar mais estável essa conexão, o professor **Fabiano Fruett** desenvolveu um **shield** específico para o LCD, que foi utilizado na etapa final do projeto.
 
+- IMPORTANTE!!
+  É necessário realizar um curto de solda entre os terminais de VCC e VDD presentes na parte de baixo do módulo PCF8575, como mostrado na Figura abaixo. Desta forma a alimentação do módulo é repassada para os pinos IO.
+
+![image](https://github.com/user-attachments/assets/a647a19c-1184-42db-ac11-fd37c3044b31)
+
 
 ## Construção mecânica
 
@@ -212,15 +220,15 @@ A PCB foi impressa pela FEEC através do SATE.
 
 ![pcb](https://github.com/user-attachments/assets/804206d5-80b3-47bb-8815-6f790df91090)
 
-Após obter a placa foi soldado os componentes.
+Após obter a placa foram soldados os componentes.
 
 ![pcb2](https://github.com/user-attachments/assets/e844368f-72b0-4318-a5a5-f2a40bce1790)
 
-Com a placa pronta, foi utilizada uma luva lã como suporte e para o jogador poder vestir e jogar, através dos furos colocados anteriormente foi conturado esta placa na luva.
+Com a placa pronta, foi utilizada uma luva lã como suporte e para o jogador poder vestir e jogar, através dos furos colocados anteriormente a placa foi costurada à luva.
 
 ![pcb3](https://github.com/user-attachments/assets/67755a42-4000-4264-a980-8e271769c4eb)
 
-Para a conexão nos dedos e utilizados como botões foi soldado jumpers com esta finalidade em uma fita de cobre que se enrolava nas pontas dos dedos.
+Para a conexão nos dedos e utilizados como botões foram soldados jumpers com esta finalidade em uma fita de cobre que se enrolava nas pontas dos dedos.
 
 ![pcb4](https://github.com/user-attachments/assets/035cc579-0863-47eb-96a3-bd226c6b0dc2)
 
