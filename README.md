@@ -30,38 +30,204 @@ eficazes quando usados no momento certo.
 
 ## Sobre o Jogo
 
-Regras básicas do jogo
-Lógica de sets
-Lógica de vai a 2
-Explicação de início, quando os dois estão prontos (ready)
-Inversão dos controles (esquerda/direita), dependendo da disposição dos jogadores
-Explicação dos poderes, as cargas
-Explicação de cada poder individualmente
-Aviso quando os poderes estão cheios, para lembrar de gastar 
+Este projeto é inspirado no clássico jogo *Pong*, mas com algumas mecânicas inovadoras para torná-lo ainda mais desafiador e interativo. 
+
+### Regras Básicas
+
+- **Objetivo**: O jogador deve defender sua base enquanto tenta ultrapassar a base adversária, movimentando seu pad com os gestos das mãos.
+- **Pontuação**: O jogador que conseguir ultrapassar a base do oponente marca 1 ponto. 
+- **Cargas**: Após cada ponto, os jogadores recebem "cargas" que podem ser utilizadas para ativar habilidades especiais (detalhadas abaixo).
+- **Sets**: A cada 5 pontos acumulados, o jogador vence 1 set. O primeiro a alcançar o número de sets definidos no início do jogo será o vencedor.
+- **Desempate**: Caso ambos os jogadores empatem em 4 pontos a 4, entra em vigor a regra "vai a 2": o jogador precisa ganhar dois pontos consecutivos para vencer o set.
+
+### Controles e Configurações
+
+1. **Menu Inicial**: 
+   - No início do jogo, é exibido um menu. Pressione o botão **A** para acessar as configurações de número de sets (1, 3 ou 5).
+   - Após selecionar o número de sets, os jogadores podem iniciar a partida.
+
+2. **Movimentação dos Pads**:
+   - Os pads são controlados pela rotação das mãos.
+   - É possível inverter os controles pressionando o dedão contra o dedo médio, permitindo maior personalização para o jogador.
+
+3. **Início do Jogo**:
+   - Para começar, ambos os jogadores devem pressionar o dedão contra o dedo indicador simultaneamente. Quando isso acontecer, a bola será lançada e o jogo começará.
+
+### Habilidades Especiais
+
+As cargas acumuladas ao longo da partida podem ser gastas em habilidades estratégicas. Cada habilidade possui um custo específico:
+
+1. **Invisibilidade**  
+   - **Custo**: 1 carga  
+   - O adversário do jogador que ativar esta habilidade ficará invisível, dificultando a visualização do pad. A invisibilidade dura por 3 rebatidas e pode ser acumulada por ativações consecutivas.
+
+2. **Escudo**  
+   - **Custo**: 2 cargas  
+   - O jogador ganha um escudo que protege sua base. O escudo dura até a próxima rebatida ou até que o jogador marque um ponto.
+
+3. **Atemporal**  
+   - **Custo**: 3 cargas  
+   - Reduz a velocidade da bola temporariamente, facilitando sua rebatida. A habilidade dura apenas uma rebatida.
+
+4. **Power Pong**  
+   - **Custo**: 4 cargas  
+   - Ativa o buff máximo no pad do jogador. Independente do ponto onde a bola atingir o pad, ela será rebatida com a velocidade lateral máxima, tornando difícil para o adversário reagir.
+
+### Limite de Cargas
+
+- A capacidade máxima de cargas é 4.  
+- Caso o jogador atinja o limite e tente receber uma carga extra, será alertado por meio do buzzer e LEDs piscando na luva.
 
 ## Documentação de Hardware
 
-### Componentes utilizados
+## Componentes utilizados
 
-Componentes da bitdog e externos que foram utilizados, incluindo a raspberry pi pico
+Os componentes utilizados neste projeto estão organizados em dois grupos: **componentes inclusos no kit da placa BitDogLabs** e **componentes externos**.
 
-### Tabelas de conexão
+### Componentes da BitDogLabs
 
-Display com a raspberry, luvas com I2C
-Inserir ou indicar referência para conexão dos periféricos da bitdoglab
+- **Joystick**  
+  Utilizado para selecionar a quantidade de sets (partidas) do jogo.
 
-### Esquemático do circuito da luva
+- **Botão A**  
+  Serve para inicializar o jogo e confirmar a quantidade de sets.
 
-Projeto do circuito da luva, com breve explicação sobre os circuitos, por exemplo pull down, conexão com negativo no PCF, pq não fornece corrente suficiente se ligado ao contrário
-Falar também da ligação que fizemos no PCF, curtando VCC e VDD para fornecer diretamente a mesma alimentação ligada ao módulo para os dispositivos controlador em suas portas
+- **Buzzer**  
+  Emite sons para tornar a partida mais dinâmica, sinalizando colisões com os pads dos jogadores, início e término do jogo, e pontuações.
 
-### Projeto da placa de circuito impresso desenvolvido
+- **Matriz de LEDs**  
+  Exibe a pontuação de cada jogador, o set atual, e os sets vencidos por cada jogador.
 
-Imagem da PCB
+- **Display OLED**  
+  Indica o set atual e o número total de sets selecionados.
 
-### Construção mecânica
+- **Raspberry Pi Pico**  
+  Microcontrolador responsável pela programação e controle dos periféricos.
 
-Fotos da luva pronta
+### Componentes Externos
+
+- **2 Expansores IO I2C (PCF8575)**  
+  Expandem a porta I2C para conectar os botões de habilidades, LEDs de sinalização de carga de poder, buzzer de alerta de carga cheia e LED RGB para identificar o jogador.  
+  - [Comprar no Aliexpress](https://pt.aliexpress.com/item/1005007080964232.html)
+
+- **2 MPU-6050**  
+  Sensores utilizados para controlar os pads de cada jogador através da rotação da mão.  
+  - [Comprar no Mercado Livre](https://produto.mercadolivre.com.br/MLB-1922679879-modulo-mpu6050-gy-521-sensor-acelermetro-giroscopio-3-eixos-_JM)
+
+- **Display LCD TFT 128x160**  
+  Exibe o jogo, o menu, e as partidas.  
+  - [Comprar no Mercado Livre](https://produto.mercadolivre.com.br/MLB-5125731078-modulo-de-tela-lcd-tft-de-18-128x160-spi-color-st7735-_JM)
+
+- **7 Resistores de 200Ω**  
+  Controlam a intensidade da luz dos LEDs de carga e protegem o LED RGB contra sobrecorrente.  
+  - [Comprar no Mercado Livre](https://produto.mercadolivre.com.br/MLB-1624979305-resistor-200-ohm-5-10pecas-_JM)
+
+- **4 Resistores de 5kΩ (ou valor próximo)**  
+  Usados como lógica pull-down para os botões de habilidades.
+  - [Comprar no Mercado Livre](https://produto.mercadolivre.com.br/MLB-1722095500-kit-10-x-resistor-47k-ohm-14w-5-projeto-arduino-raspberry-_JM?matt_tool=14213447&matt_word=&matt_source=bing&matt_campaign=MLB_ML_BING_AO_CE-ALL-ALL_X_PLA_ALLB_TXS_ALL&matt_campaign_id=382858295&matt_ad_group=CE&matt_match_type=e&matt_network=o&matt_device=c&matt_keyword=default&msclkid=34bebad5f9b4163fa580dd9956da3a71&utm_source=bing&utm_medium=cpc&utm_campaign=MLB_ML_BING_AO_CE-ALL-ALL_X_PLA_ALLB_TXS_ALL&utm_term=4581596253419739&utm_content=CE)
+
+
+- **4 LEDs (brancos ou azuis)**  
+  Indicadores de carga de poder armazenada.  
+  - [Comprar no Mercado Livre](https://produto.mercadolivre.com.br/MLB-2015068823-50x-led-5mm-azul-difuso-_JM)
+
+- **1 Buzzer Passivo 5V**  
+  Sinaliza que as cargas de poder estão cheias.  
+  - [Comprar no Mercado Livre](https://produto.mercadolivre.com.br/MLB-2664375798-buzzer-passivo-5v-continuo-arduino-raspberry-pic-arm-_JM)
+
+- **1 LED RGB (ânodo comum)**  
+  Identifica o jogador através da cor do pad.  
+  - [Comprar no Mercado Livre](https://produto.mercadolivre.com.br/MLB-3914705318-kit-10-leds-rgb-5mm-nodo-comum-_JM)
+
+## Esquemático do Circuito da Luva
+
+O esquemático do circuito da luva foi dividido em partes para facilitar o entendimento de cada seção do projeto.
+
+### Conexões Principais
+
+![Esquemático 1](https://github.com/user-attachments/assets/1f3aed6b-559a-4ec5-8188-8d86bfb70359)
+
+Nesta parte do esquemático, são exibidas as conexões entre o **PCF8575**, **MPU6050** e o soquete que conecta a placa desenvolvida com a **BitDogLab**. Ambos os componentes estão conectados à mesma porta **I2C**. Como a BitDogLab possui duas portas I2C disponíveis, cada porta será utilizada por um jogador.
+
+- **PCF8575**: Recebe alimentação pelo pino **VCC** e fornece saída pelo **VDD**. Como a alimentação é de 3.3V, é necessário realizar um curto entre **VCC** e **VDD** na parte traseira da placa para garantir a mesma tensão em ambos. Isso permite alimentar outros componentes pelo VDD.
+- As portas do **PCF8575** estão conectadas a diversos periféricos, como botões, LEDs, LED RGB e buzzer.
+
+### Lógica dos Botões
+
+![Esquemático 2](https://github.com/user-attachments/assets/85e2cc81-4d0f-46b3-ab4a-cd1da1f87177)
+
+Nesta seção, é apresentada a lógica para os botões:
+
+- **D1 (dedão)**: Conectado ao **VDD**, com tensão de 3.3V.
+- **D2, D3, D4 e D5 (outros dedos)**: Conectados a resistores de 5kΩ configurados em uma lógica **Pull-Down**, ligados ao **GND**.
+
+Quando o dedão toca outro dedo, o circuito se fecha, funcionando de maneira similar ao pressionar um botão. O nível lógico resultante é lido pelas portas do **PCF8575**.
+
+### LEDs Indicadores de Carga
+
+![Esquemático 3](https://github.com/user-attachments/assets/5104c6df-90e2-4829-a48e-689d9fcdef14)
+
+Esta parte do circuito controla os LEDs que indicam a quantidade de carga:
+
+- Os LEDs estão conectados ao **VDD** e ao **GND** através das portas do **PCF8575**.
+- Como o **PCF8575** não fornece corrente suficiente para acionar os LEDs diretamente quando configurado como saída de **VDD**, foi utilizada a ligação mostrada no esquemático, permitindo o funcionamento correto.
+
+### LED RGB e Buzzer
+
+![Esquemático 4](https://github.com/user-attachments/assets/43aa148b-2284-468d-8aa9-e6ad8c879042)
+
+Nesta seção, são apresentados o LED RGB e o Buzzer:
+
+- **LED RGB**: Utiliza um **ânodo comum**, o que permite funcionar corretamente com a lógica de alimentação similar à dos LEDs de carga.
+- **Buzzer**: Conectado de maneira similar para superar a limitação de corrente mencionada.
+
+## Projeto da Placa de Circuito Impresso (PCB)
+
+A seguir, temos a imagem do layout da PCB desenvolvida:
+
+![PCB](https://github.com/user-attachments/assets/89205839-e326-4e48-b60f-48d302fe7555)
+
+### Organização dos Componentes
+
+- **MPU6050** e **PCF8575**: Posicionados próximos ao soquete para facilitar as conexões.
+- **LEDs de carga**: Alinhados próximos ao Buzzer, na ordem em que serão acionados.
+- **LED RGB**: Localizado no lado direito da placa, identificando o jogador.
+- **Fios para os dedos**: Organizados para se alinhar corretamente à luva, facilitando a conexão.
+- **Furos de fixação**: Incluídos para prender a placa na luva, garantindo estabilidade.
+
+O design priorizou uma PCB de face simples, otimizando o posicionamento dos componentes e minimizando o uso de trilhas cruzadas.
+
+## Conexões
+
+A conexão da placa desenvolvida foi feita através 2 cabos de 4 vias com conector JST conectados entre si conectada na entrada I2C da BitDogLab.
+
+Outra conexão importante foi realizada com o LCD, seguindo o esquema de ligação descrito no repositório [pico-1p54in-lcd-graphics](https://github.com/BitDogLab/BitDogLab/tree/main/softwares/pico-1p54in-lcd-graphics). 
+
+Para facilitar e tornar mais estável essa conexão, o professor **Fabiano Fruett** desenvolveu um **shield** específico para o LCD, que foi utilizado na etapa final do projeto.
+
+
+## Construção mecânica
+
+A PCB foi impressa pela FEEC através do SATE.
+
+![pcb](https://github.com/user-attachments/assets/804206d5-80b3-47bb-8815-6f790df91090)
+
+Após obter a placa foi soldado os componentes.
+
+![pcb2](https://github.com/user-attachments/assets/e844368f-72b0-4318-a5a5-f2a40bce1790)
+
+Com a placa pronta, foi utilizada uma luva lã como suporte e para o jogador poder vestir e jogar, através dos furos colocados anteriormente foi conturado esta placa na luva.
+
+![pcb3](https://github.com/user-attachments/assets/67755a42-4000-4264-a980-8e271769c4eb)
+
+Para a conexão nos dedos e utilizados como botões foi soldado jumpers com esta finalidade em uma fita de cobre que se enrolava nas pontas dos dedos.
+
+![pcb4](https://github.com/user-attachments/assets/035cc579-0863-47eb-96a3-bd226c6b0dc2)
+
+Após ser montado duas luvas para dois jogadores, as luvas foram conectas as placa BitDogLab através de 2 cabos de 4 vias com conector JST conectados entre si, como dito anteriormente, com o intutio de ter maior mobilidade para o jogador, além disto a conexão com o LCD com a BitDogLab foi feita através de um shield desenvolvido pelo Professor Fabiano Fruett.
+
+![Imagem do WhatsApp de 2024-11-22 à(s) 15 47 27_c108c282](https://github.com/user-attachments/assets/4a478f5f-6d01-4dd4-ae0f-56b5acd76491)
+
 
 ## Documentação de Software
 
@@ -111,4 +277,57 @@ A velocidade da bolinha aumenta gradualmente a cada rebote, tornando o jogo mais
 
 ### Organização dos Arquivos
 
-Os arquivos estão disponíveis nesta [pasta](/code).
+Os arquivos que compõe a memória da Raspberry Pi Pico, necessários para executar o jogo são os mostrados abaixo, e estão disponíveis nesta [pasta](/code).
+
+1. Lógica principal do programa
+    - *main.py*: Inicialização e execução da máquina de estados.
+
+2. Lógica de jogo
+    - *game_classes.py*: Classes da lógica de Jogo, como a classe de jogador, da bola e do escudo.
+    - *game_constants.py*: Valores constantes como tamanhos dos jogadores, dimensões da tela e outros.
+    - *game_routines.py*: Rotinas de execução de cada estado da máquina de estados. Responsável por orquestrar os objetos definidos a depender do estado corrente.
+
+3. Periféricos
+    - *mpu6050.py*: Biblioteca para interação com o MPU6050, sensor I2C acelerômetro e giroscópio de 6 eixos.
+    - *pcf8575.py*: Biblioteca para interação com o PCF8575, extensor de I/O I2C com diversas portas GPIO.
+    - *ssd1306.py*: Biblioteca para interação com o SSD1306, display OLED I2C 128x64px.
+    - *tft_config.py*: Arquivo de configuração do display LCD SPI utilizado, definindo a equivalência das portas do display com as da Raspberry.
+    - *glove.py*: Biblioteca criada para facilitar interação com os componentes presentes na luva, oferencendo acesso direto ao valor do ângulo em que a luva está posicionada e aos periféricos conectados ao extensor de I/O. Também executa uma rotina de testes na luva se executado diretamente.
+    - *peripherals.py*: Classe de incialização de todos os periféricos controlados pelo projeto, também carrega uma referência a cada um deles para evitar a necessidade de passagem de muitos parâmetros para as rotinas do jogo.
+
+4. Funções auxiliares
+    - *util.py*
+
+5. Fontes para escrita no display LCD
+    - *vga1_16x32.py*
+    - *vga1_8x8.py*
+    - *vga1_bold_16x32.py*
+
+## Resultados
+
+O projeto foi concluído com sucesso e proporcionou um grande aprendizado para a equipe. Como o projeto é um jogo, nos divertimos muito durante o desenvolvimento, especialmente ao imaginar a dinâmica e a diversão que os jogadores teriam. Utilizamos nossa criatividade para projetar os comandos do controle, os poderes e as interações do jogo.
+
+### Desafios Enfrentados
+
+Durante o desenvolvimento, enfrentamos alguns desafios importantes que contribuíram para a melhoria contínua do projeto:
+
+- **Substituição do Display**: No início, o display originalmente escolhido teve que ser substituído, o que exigiu ajustes significativos no código. Embora isso tenha demandado tempo, essa experiência nos ajudou a modularizar o código, facilitando futuras alterações e melhorias.
+  
+- **Atrasos na Produção da Placa**: O processo de impressão da placa sofreu atrasos, o que impediu a realização de testes e afetou o desenvolvimento de funcionalidades adicionais, como novas utilidades para o LED RGB e o buzzer.
+
+### Melhorias Futuras
+
+Identificamos diversas áreas para melhorar o projeto em versões futuras:
+
+#### 1. **Hardware**
+   - **Redução do Tamanho da Placa**: A placa pode ser compactada, eliminando o uso de módulos como o PCF8575 e o MPU6050 e substituindo-os por componentes individuais.
+   - **Uso de Componentes SMD**: A utilização de componentes SMD (Surface-Mounted Device) ajudará a reduzir ainda mais o tamanho da placa.
+   - **Conforto para o Jogador**: Melhorar o material e o método de fixação da luva, garantindo maior conforto ao jogador durante o uso.
+   
+#### 2. **Funcionalidades**
+   - **Uso das Portas Disponíveis**: Aproveitar as portas restantes do PCF8575 para adicionar mais LEDs para indicar níveis de carga ou novos poderes.
+   - **Otimização do Código**: Reescrever o código em C para melhorar a eficiência e tornar o jogo mais dinâmico.
+
+Essas melhorias visam tornar o projeto mais eficiente, compacto e com maior interatividade para o usuário.
+
+  
